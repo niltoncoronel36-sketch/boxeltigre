@@ -1,0 +1,736 @@
+:root{
+  --bg: #0b0f19;
+  --panel: rgba(255,255,255,0.06);
+  --panel-2: rgba(255,255,255,0.10);
+  --text: rgba(255,255,255,0.92);
+  --muted: rgba(255,255,255,0.68);
+  --line: rgba(255,255,255,0.10);
+
+  --primary: #ff6a00;
+  --primary-2: rgba(255,106,0,0.22);
+
+  --radius: 14px;
+
+  --sidebar-collapsed: 100px;
+  --sidebar-expanded: 260px;
+}
+
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  background: linear-gradient(180deg, #070a12 0%, #0b0f19 100%);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+}
+
+.app-shell{
+  min-height:100vh;
+  display:flex;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width: var(--sidebar-collapsed);
+  min-height:100vh;
+  position: sticky;
+  top:0;
+
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+
+  padding:14px;
+  background: rgba(10,14,24,0.72);
+  backdrop-filter: blur(14px);
+  border-right: 1px solid var(--line);
+
+  transition: width .22s ease;
+  overflow: hidden;
+}
+
+/* EXPAND ON HOVER */
+.sidebar:hover{
+  width: var(--sidebar-expanded);
+}
+
+/* Brand */
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  border: 1px solid var(--line);
+}
+
+.brand-icon{
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-radius: 12px;
+  background: radial-gradient(circle at 30% 30%, var(--primary-2), rgba(255,255,255,0.06));
+  border: 1px solid rgba(255,106,0,0.25);
+  color: var(--text);
+  flex: 0 0 auto;
+}
+
+.brand-info{
+  min-width:0;
+}
+
+.brand-title{
+  font-weight: 700;
+  letter-spacing: .2px;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+}
+
+.brand-sub{
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.accent-line{
+  height:1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,106,0,0.55) 50%, transparent 100%);
+  opacity: .9;
+  margin: 2px 6px 0;
+}
+
+/* NAV */
+.nav{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding: 6px 2px;
+}
+
+.nav-link{
+  display:flex;
+  align-items:center;
+  gap:12px;
+
+  width:100%;
+  padding:10px 12px;
+
+  border-radius: 12px;
+  color: var(--muted);
+  text-decoration:none;
+
+  border: 1px solid transparent;
+  background: transparent;
+
+  cursor:pointer;
+  transition: background .15s ease, border-color .15s ease, color .15s ease, transform .10s ease;
+}
+
+.nav-link:hover{
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.10);
+  color: var(--text);
+}
+
+.nav-link:active{
+  transform: translateY(1px);
+}
+
+.nav-link.active{
+  color: var(--text);
+  background: linear-gradient(90deg, rgba(255,106,0,0.18), rgba(255,255,255,0.05));
+  border-color: rgba(255,106,0,0.30);
+  box-shadow: 0 0 0 1px rgba(255,106,0,0.10) inset;
+}
+
+.icon{
+  width: 34px;
+  height: 34px;
+  display:grid;
+  place-items:center;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: currentColor;
+  flex: 0 0 auto;
+}
+
+.nav-text{
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+
+  opacity: 0;
+  max-width: 0;
+  transform: translateX(-6px);
+  transition: opacity .18s ease, max-width .22s ease, transform .22s ease;
+}
+
+/* show text when expanded (hover) */
+.sidebar:hover .nav-text,
+.sidebar:hover .brand-info,
+.sidebar:hover .btn-web-text{
+  opacity: 1;
+  max-width: 220px;
+  transform: translateX(0);
+}
+
+.brand-info,
+.btn-web-text{
+  opacity: 0;
+  max-width: 0;
+  overflow:hidden;
+  white-space: nowrap;
+  transition: opacity .18s ease, max-width .22s ease, transform .22s ease;
+  transform: translateX(-6px);
+}
+
+/* When collapsed: center items */
+.sidebar:not(:hover) .nav-link{
+  justify-content: center;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.sidebar:not(:hover) .nav-link .arrow{
+  display:none;
+}
+
+/* Group / sub-nav */
+.nav-group{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.nav-dropdown-btn{
+  background: transparent;
+}
+
+.arrow{
+  margin-left:auto;
+  opacity: 0;
+  transform: rotate(0deg);
+  transition: transform .18s ease, opacity .18s ease;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.sidebar:hover .arrow{
+  opacity: 1;
+}
+
+.arrow.up{
+  transform: rotate(180deg);
+}
+
+.sub-nav{
+  display:none;
+  flex-direction:column;
+  gap:6px;
+  padding-left: 8px;
+}
+
+.sub-nav.show{
+  display:flex;
+}
+
+.sub-nav .nav-link{
+  padding: 9px 10px;
+}
+
+.sub-nav .icon{
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+}
+
+/* FOOTER */
+.sidebar-footer{
+  margin-top:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.user-box{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px;
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.user-avatar{
+  width:38px;
+  height:38px;
+  border-radius: 12px;
+  display:grid;
+  place-items:center;
+  font-weight: 800;
+  background: radial-gradient(circle at 30% 30%, rgba(255,106,0,0.35), rgba(255,255,255,0.06));
+  border: 1px solid rgba(255,106,0,0.25);
+}
+
+.user-name{
+  font-weight: 700;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+}
+
+.user-email{
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+}
+
+.btn{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  cursor:pointer;
+  text-decoration:none;
+  transition: background .15s ease, border-color .15s ease, transform .10s ease;
+}
+
+.btn:hover{
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.14);
+}
+
+.btn:active{
+  transform: translateY(1px);
+}
+
+.btn-primary{
+  background: linear-gradient(90deg, rgba(255,106,0,0.22), rgba(255,255,255,0.06));
+  border-color: rgba(255,106,0,0.30);
+}
+
+.btn-logout{
+  width:100%;
+  justify-content:center;
+}
+
+.sidebar:hover .btn-logout{
+  justify-content:flex-start;
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  min-width: 0;
+}
+
+.topbar{
+  height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+
+  padding: 0 18px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(10,14,24,0.55);
+  backdrop-filter: blur(14px);
+}
+
+.topbar-title{
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+
+.topbar-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.btn-web{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.role-badge{
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.content{
+  padding: 18px;
+  min-width:0;
+}
+/* =========================================================
+   ✅ FIX DEFINITIVO: Desktop colapsado vs Mobile sin hover
+   PÉGALO AL FINAL (o reemplaza tus fixes por este)
+========================================================= */
+
+html, body { overflow-x: hidden; }
+
+/* ---------- 1) Desktop / laptops (hay hover real) ---------- */
+@media (hover: hover) and (pointer: fine) {
+
+  /* centra los items cuando está colapsado */
+  .sidebar:not(:hover) .nav{
+    align-items: center;
+  }
+
+  /* link NO píldora, se vuelve “caja” */
+  .sidebar:not(:hover) .nav-link{
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border-radius: 14px;
+
+    justify-content: center;
+    align-self: center;
+
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    box-shadow: none !important;
+  }
+
+  /* en colapsado NO pintes el fondo en el contenedor */
+  .sidebar:not(:hover) .nav-link:hover{
+    background: transparent !important;
+    border-color: transparent !important;
+  }
+
+  /* el cuadrado visible es el .icon */
+  .sidebar:not(:hover) .nav-link .icon{
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+
+    display: grid;
+    place-items: center;
+
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+
+  /* hover: resalta el cuadrado */
+  .sidebar:not(:hover) .nav-link:hover .icon{
+    background: rgba(255,255,255,0.10);
+    border-color: rgba(255,255,255,0.18);
+  }
+
+  /* active: resalta el cuadrado (no píldora) */
+  .sidebar:not(:hover) .nav-link.active{
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .sidebar:not(:hover) .nav-link.active .icon{
+    background: linear-gradient(
+      180deg,
+      rgba(255,106,0,0.38),
+      rgba(255,106,0,0.14)
+    );
+    border-color: rgba(255,106,0,0.38);
+    box-shadow: 0 0 0 1px rgba(255,106,0,0.10) inset;
+  }
+
+  /* colapsado: no flechas ni subnav */
+  .sidebar:not(:hover) .arrow{ display: none !important; }
+  .sidebar:not(:hover) .sub-nav{ display: none !important; }
+}
+
+/* ---------- 2) Mobile / tablet táctil (NO hover) ---------- */
+@media (hover: none) and (pointer: coarse) {
+
+  .app-shell{
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* Sidebar => bottom bar */
+  .sidebar{
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+
+    width: 100% !important;
+    min-height: auto;
+    height: 74px;
+
+    padding: 10px 10px 12px;
+    border-right: none;
+    border-top: 1px solid var(--line);
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+
+    z-index: 50;
+    overflow: hidden;
+
+    /* anula comportamientos de desktop */
+    transition: none !important;
+  }
+
+  /* Desactiva “expand on hover” */
+  .sidebar:hover{ width: 100% !important; }
+
+  /* Oculta marca y footer */
+  .brand,
+  .accent-line,
+  .sidebar-footer{ display: none !important; }
+
+  /* Nav horizontal */
+  .nav{
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* IMPORTANTÍSIMO: anula el modo “colapsado” en mobile */
+  .sidebar:not(:hover) .nav-link{
+    width: 56px !important;
+    height: 56px !important;
+    padding: 0 !important;
+    border-radius: 14px !important;
+
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    box-shadow: none !important;
+    justify-content: center !important;
+  }
+
+  .sidebar:not(:hover) .nav-link .icon{
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 14px !important;
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+  }
+
+  /* Active en mobile */
+  .nav-link.active .icon{
+    background: linear-gradient(
+      180deg,
+      rgba(255,106,0,0.38),
+      rgba(255,106,0,0.14)
+    ) !important;
+    border-color: rgba(255,106,0,0.38) !important;
+  }
+
+  /* sin textos / flechas / subnav */
+  .nav-text,
+  .brand-info,
+  .btn-web-text,
+  .arrow,
+  .sub-nav{ display: none !important; }
+
+  /* Main: espacio para la barra inferior */
+  .main{
+    width: 100%;
+    padding-bottom: 84px;
+  }
+
+  .topbar{
+    height: auto;
+    padding: 12px;
+    flex-wrap: wrap;
+  }
+
+  .topbar-actions{
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .content{
+    padding: 12px;
+  }
+}
+
+/* Pantallas angostas generales */
+@media (max-width: 900px){
+  .content{ padding: 12px; }
+}
+
+
+
+/* =========================
+   ✅ RESPONSIVE: SIDEBAR A UN COSTADO (LEFT)
+   PÉGALO AL FINAL
+========================= */
+
+@media (max-width: 900px) {
+
+  /* Mantén layout en fila (sidebar izquierda + main) */
+  .app-shell{
+    flex-direction: row !important;
+    min-height: 100vh;
+  }
+
+  /* Sidebar fijo a la izquierda */
+  .sidebar{
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: auto;
+
+    width: 78px !important;      /* colapsado en móvil */
+    min-height: 100vh !important;
+    height: 100vh !important;
+
+    padding: 12px !important;
+    border-right: 1px solid var(--line) !important;
+    border-top: none !important;
+
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+
+    overflow: hidden !important;
+    z-index: 60 !important;
+  }
+
+  /* Desactiva el “expand on hover” (en táctil no sirve) */
+  .sidebar:hover{
+    width: 78px !important;
+  }
+
+  /* Oculta marca y footer si quieres ahorrar espacio */
+  .brand,
+  .accent-line,
+  .sidebar-footer{
+    display: none !important;
+  }
+
+  /* Nav vertical normal */
+  .nav{
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Botones cuadrados */
+  .nav-link{
+    width: 56px !important;
+    height: 56px !important;
+    padding: 0 !important;
+    border-radius: 14px !important;
+    justify-content: center !important;
+  }
+
+  .icon{
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 14px !important;
+  }
+
+  /* Sin textos / flechas / subnav en móvil */
+  .nav-text,
+  .brand-info,
+  .btn-web-text,
+  .arrow,
+  .sub-nav{
+    display: none !important;
+  }
+
+  /* Main deja espacio para sidebar fijo */
+  .main{
+    width: 100% !important;
+    padding-left: 92px !important; /* 78 + padding */
+    padding-bottom: 0 !important;
+  }
+
+  .content{ padding: 12px !important; }
+}
+
+
+
+/* =========================================================
+   ✅ PATCH FINAL (NO QUITA NADA)
+   - Evita conflicto entre "bottom bar" y "left sidebar"
+   - Ajusta botón "Ir a la web" en topbar
+   - Hace el contenido más flexible (menos vacío)
+========================================================= */
+
+/* 1) En móviles/tablets: si ya usas sidebar a la izquierda (max-width:900),
+      anulamos la regla anterior de "bottom bar" para que NO se pisen. */
+@media (max-width: 900px) {
+  .sidebar{
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: auto !important;
+    height: 100vh !important;
+    border-top: none !important;
+  }
+}
+
+/* 2) Botón "Ir a la web" en topbar:
+      en pantallas muy chicas mostramos solo el ícono */
+@media (max-width: 520px) {
+  .topbar .btn-web .btn-web-text {
+    display: none !important;
+  }
+}
+
+/* 3) Contenido flexible para StudentLayout:
+      evita que se "centre" y quede un hueco grande */
+.student-content{
+  display: flex;
+  justify-content: flex-start;
+}
+
+.student-content-inner{
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* cuando el sidebar está colapsado en desktop, aprovecha más ancho */
+@media (hover: hover) and (pointer: fine){
+  .sidebar:not(:hover) + .main .student-content-inner{
+    max-width: 1400px;
+  }
+}
+
+
+

@@ -1,0 +1,283 @@
+/* src/components/layout.css */
+:root{
+  /* ✅ Light theme */
+  --bg:#f6f7f9;
+  --panel:#ffffff;
+  --panel2:#ffffff;
+  --text:rgba(14,14,14,.92);
+  --muted:rgba(14,14,14,.60);
+  --border:rgba(14,14,14,.10);
+
+  --orange:#ff7a18;
+  --red:#ff2d2d;
+
+  --shadow:0 18px 60px rgba(0,0,0,.10);
+  --shadow2:0 10px 26px rgba(0,0,0,.08);
+
+  --radius:18px;
+}
+
+/* Shell */
+.app-shell{
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:280px 1fr;
+  background:
+    radial-gradient(900px 520px at 20% 15%, rgba(255,122,24,.10), transparent 60%),
+    radial-gradient(900px 520px at 80% 65%, rgba(255,45,45,.08), transparent 60%),
+    linear-gradient(180deg, #f6f7f9 0%, #ffffff 55%, #f6f7f9 100%);
+  color:var(--text);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+}
+
+@media (max-width: 900px){
+  .app-shell{ grid-template-columns: 1fr; }
+}
+
+/* Sidebar */
+.sidebar{
+  position:sticky;
+  top:0;
+  height:100vh;
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+
+  border-right:1px solid rgba(0,0,0,.08);
+  background: linear-gradient(180deg, rgba(255,255,255,.92) 0%, rgba(250,250,250,.92) 100%);
+  box-shadow: 12px 0 40px rgba(0,0,0,.06);
+}
+
+.brand{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.brand-title{
+  font-weight:900;
+  font-size:18px;
+  letter-spacing:.2px;
+  color: rgba(0,0,0,.92);
+}
+
+.brand-sub{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.accent-line{
+  height:3px;
+  border-radius:999px;
+  background: linear-gradient(90deg, var(--orange), var(--red));
+  box-shadow: 0 0 22px rgba(255,45,45,.10);
+}
+
+/* Nav */
+.nav{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:6px;
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 12px;
+}
+
+.nav-link{
+  position:relative;
+  padding:11px 12px;
+  border-radius:14px;
+  text-decoration:none;
+  color:rgba(0,0,0,.78);
+  border:1px solid rgba(0,0,0,.08);
+  background: rgba(0,0,0,.02);
+  transition: transform 140ms ease, background 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.nav-link:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,122,24,.35);
+  background: rgba(255,122,24,.08);
+  color: rgba(0,0,0,.88);
+}
+
+.nav-link.active{
+  color:#0b0b0b;
+  font-weight:900;
+  border-color: transparent;
+  background: linear-gradient(90deg, var(--orange), var(--red));
+  box-shadow: 0 18px 40px rgba(255,45,45,.14);
+}
+
+.nav-link.active::before{
+  content:"";
+  position:absolute;
+  left:-18px;
+  top:50%;
+  transform:translateY(-50%);
+  width:6px;
+  height:22px;
+  border-radius:999px;
+  background: linear-gradient(180deg, var(--orange), var(--red));
+}
+
+/* Sidebar footer */
+.sidebar-footer{
+  margin-top:auto;
+  display:grid;
+  gap:10px;
+  padding-top:12px;
+  border-top:1px solid rgba(0,0,0,.08);
+}
+
+.user-box{
+  font-size:12px;
+  color:rgba(0,0,0,.62);
+}
+
+.user-name{
+  font-weight:800;
+  color:rgba(0,0,0,.88);
+}
+
+.user-email{
+  opacity:.85;
+}
+
+/* Main */
+.main{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+}
+
+/* Topbar */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:10;
+  padding:16px 18px;
+  border-bottom:1px solid rgba(0,0,0,.08);
+  background: linear-gradient(180deg, rgba(255,255,255,.85) 0%, rgba(255,255,255,.65) 100%);
+  backdrop-filter: blur(10px);
+}
+
+.topbar-title{
+  font-weight:900;
+  letter-spacing:.2px;
+  color: rgba(0,0,0,.90);
+}
+
+/* Content */
+.content{
+  padding:18px;
+}
+
+/* UI bits */
+.btn{
+  border:1px solid rgba(0,0,0,.10);
+  padding:11px 12px;
+  border-radius:14px;
+  background: rgba(255,255,255,.92);
+  color:rgba(0,0,0,.86);
+  cursor:pointer;
+  transition: transform 140ms ease, filter 140ms ease, border-color 140ms ease, background 140ms ease;
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
+}
+
+.btn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,122,24,.35);
+  background: rgba(255,122,24,.10);
+}
+
+.btn-primary{
+  border:none;
+  background: linear-gradient(90deg, var(--orange), var(--red));
+  color:#0b0b0b;
+  font-weight:900;
+  box-shadow: 0 18px 40px rgba(255,45,45,.16);
+}
+
+.btn-primary:hover{
+  filter: brightness(1.05);
+}
+
+.card{
+  border:1px solid rgba(0,0,0,.08);
+  border-radius: var(--radius);
+  padding:18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.92) 0%, rgba(255,255,255,.86) 100%);
+  box-shadow: var(--shadow2);
+  color: var(--text); /* ✅ asegura texto oscuro */
+}
+
+.grid{
+  display:grid;
+  gap:12px;
+}
+
+/* ===========================
+   ✅ Light theme helpers
+   (arregla textos blancos)
+   =========================== */
+
+body, .app-shell, .main, .content{
+  color: var(--text);
+}
+
+/* Inputs usados en tus vistas */
+.input{
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(255,255,255,.96);
+  color: rgba(0,0,0,.88);
+  outline: none;
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
+}
+
+.input::placeholder{
+  color: rgba(0,0,0,.45);
+}
+
+.input:focus{
+  border-color: rgba(255,122,24,.45);
+  box-shadow: 0 0 0 4px rgba(255,122,24,.14);
+}
+
+/* Mensajes de error */
+.err{
+  border: 1px solid rgba(255,45,45,.22);
+  background: rgba(255,45,45,.08);
+  color: rgba(120,0,0,.92);
+  padding: 12px;
+  border-radius: 14px;
+  font-weight: 800;
+}
+
+/* Tablas */
+table{
+  color: rgba(0,0,0,.86);
+}
+
+th{
+  color: rgba(0,0,0,.70);
+}
+
+td{
+  color: rgba(0,0,0,.82);
+}
+
+/* Helpers opcionales para textos */
+.title{
+  color: rgba(0,0,0,.92);
+  font-weight: 900;
+}
+
+.subtitle, .muted{
+  color: rgba(0,0,0,.60);
+}
