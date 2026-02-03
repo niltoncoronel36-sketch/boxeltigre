@@ -385,7 +385,7 @@ export default function EnrollmentSheet(props: {
       <style>{`
         .a4-stage{
           padding: 16px;
-          background: #0b1220;
+          background: #fff;
           min-height: 100vh;
         }
         .top-actions{

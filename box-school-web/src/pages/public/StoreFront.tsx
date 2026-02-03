@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+
 import { api } from "../../services/api";
 import type { StoreCategory, StoreProduct } from "./store/types";
 import {
@@ -20,7 +22,7 @@ function money(n: any) {
 }
 
 function getVariantLabel(it: CartItem) {
-  const parts = [it.size, it.color].filter(Boolean);
+  const parts = [it.size, it.color, (it as any).oz].filter(Boolean);
   return parts.length ? `(${parts.join(" / ")})` : "";
 }
 
@@ -36,9 +38,111 @@ function pickArrayFromResponse(res: any): any[] {
   return [];
 }
 
+/* =======================
+   ✅ Banner rotativo PRO (con imágenes)
+======================= */
+type BannerItem = {
+  title: string;
+  text?: string;
+  cta?: string;
+  href?: string;
+  image: string; // desktop (public/banners/...)
+  imageMobile?: string; // opcional móvil
+  tone?: "accent" | "dark";
+};
+
+function BannerRotator() {
+  const items: BannerItem[] = useMemo(
+    () => [
+      {
+        title: "🔥 OFERTAS HOY",
+        text: "10% en guantes seleccionados • Usa: TIGRE10",
+        cta: "Ver ofertas",
+        href: "/tienda",
+        image: "/banners/oferta.png",
+        imageMobile: "/banners/oferta-1-m.webp",
+        tone: "accent",
+      },
+      {
+        title: "🚚 Envíos en Lima",
+        text: "Coordina por WhatsApp • Entrega rápida",
+        cta: "Cómo funciona",
+        href: "/contacto",
+        image: "/banners/oferta2.png",
+        imageMobile: "/banners/oferta-2-m.webp",
+        tone: "dark",
+      },
+      {
+        title: "🎁 Packs",
+        text: "Vendas + protector bucal • Promo limitada",
+        cta: "Ver packs",
+        href: "/tienda",
+        image: "/banners/oferta3.png",
+        imageMobile: "/banners/oferta-3-m.webp",
+        tone: "accent",
+      },
+    ],
+    []
+  );
+
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    const prefersReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    if (prefersReduced) return;
+
+    const id = window.setInterval(() => setIdx((p) => (p + 1) % items.length), 5200);
+    return () => window.clearInterval(id);
+  }, [items.length]);
+
+  const b = items[idx];
+  const Wrap: any = b.href ? Link : "div";
+  const wrapProps = b.href ? { to: b.href } : {};
+
+  return (
+    <div className="pub-bannerWrap" aria-label="Ofertas">
+      <Wrap
+        className={`pub-bannerPro ${b.tone === "dark" ? "is-dark" : "is-accent"}`}
+        {...wrapProps}
+        style={{ ["--bg" as any]: `url(${b.image})` }}
+      >
+        {b.imageMobile ? (
+          <span className="pub-bannerPro__mobile" style={{ ["--bgm" as any]: `url(${b.imageMobile})` }} />
+        ) : null}
+
+        <div className="pub-bannerPro__shade" />
+
+        <div className="pub-bannerPro__content">
+          <div className="pub-bannerPro__title">{b.title}</div>
+          {b.text ? <div className="pub-bannerPro__text">{b.text}</div> : null}
+          {b.cta ? <div className="pub-bannerPro__cta">{b.cta} →</div> : null}
+        </div>
+
+        <div className="pub-bannerPro__dots" aria-label="Cambiar banner">
+          {items.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              className={`pub-bannerPro__dot ${i === idx ? "is-active" : ""}`}
+              onClick={(e) => {
+                e.preventDefault();
+                setIdx(i);
+              }}
+              aria-label={`Banner ${i + 1}`}
+            />
+          ))}
+        </div>
+      </Wrap>
+    </div>
+  );
+}
+
 export default function StoreFront() {
-  // ✅ CAMBIA TU NÚMERO (Perú: 51 + 9xxxxxxxx)
-  const WHATSAPP_NUMBER = "51999999999";
+  // ✅ WhatsApp sin espacios
+  const WHATSAPP_NUMBER = "51947637782";
+
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [q, setQ] = useState("");
   const [catSlug, setCatSlug] = useState<string | "Todos">("Todos");
@@ -53,7 +157,7 @@ export default function StoreFront() {
   const [cartOpen, setCartOpen] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  // ✅ Datos del cliente (para registrar pedido)
+  // ✅ Datos del cliente
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
 
@@ -71,6 +175,19 @@ export default function StoreFront() {
   useEffect(() => {
     setCart(loadCart());
   }, []);
+
+  // ✅ Si vienes de detalle con ?cart=1 -> abrir drawer y limpiar URL
+  useEffect(() => {
+    const sp = new URLSearchParams(location.search);
+
+    if (sp.get("cart") === "1") {
+      setCartOpen(true);
+
+      sp.delete("cart");
+      const next = sp.toString();
+      navigate(next ? `/tienda?${next}` : "/tienda", { replace: true });
+    }
+  }, [location.search, navigate]);
 
   // ✅ Categorías
   useEffect(() => {
@@ -96,21 +213,17 @@ export default function StoreFront() {
 
   // ✅ Productos (debounce)
   useEffect(() => {
-    const t = window.setTimeout(() => {
-      let alive = true;
-      const controller = new AbortController();
+    let alive = true;
+    const controller = new AbortController();
 
+    const t = window.setTimeout(() => {
       (async () => {
         setLoadingProducts(true);
         setFetchError(null);
 
         try {
           const sortParam =
-            sort === "price_asc"
-              ? "price_asc"
-              : sort === "price_desc"
-              ? "price_desc"
-              : "newest";
+            sort === "price_asc" ? "price_asc" : sort === "price_desc" ? "price_desc" : "newest";
 
           const res = await api.get("/api/products", {
             params: {
@@ -133,39 +246,60 @@ export default function StoreFront() {
           if (alive) setLoadingProducts(false);
         }
       })();
-
-      return () => {
-        alive = false;
-        controller.abort();
-      };
     }, 260);
 
-    return () => window.clearTimeout(t);
+    return () => {
+      alive = false;
+      window.clearTimeout(t);
+      controller.abort();
+    };
   }, [q, catSlug, sort]);
 
   const count = useMemo(() => cartCount(cart), [cart]);
   const total = useMemo(() => cartTotal(cart), [cart]);
 
-  const add = (p: StoreProduct) => {
-    setCart((prev) =>
-      addToCart(prev, {
-        product_id: p.id,
-        slug: p.slug,
-        name: p.name,
-        // ✅ fuerza número seguro
-        price: Number((p as any).price ?? 0),
-        image: (p as any).image ?? null,
-        qty: 1,
-      })
-    );
-    setCartOpen(true);
-  };
+  // ✅ SOLO bloquea si requiere variante y no tiene variant_id
+  const missingVariant = useMemo(() => {
+    return cart.some((it: any) => Boolean(it.requires_variant) && it.variant_id == null);
+  }, [cart]);
 
   const paymentLabel = (m: PaymentMethod) => {
     if (m === "cash") return "Efectivo";
     if (m === "whatsapp") return "WhatsApp";
     if (m === "yape") return "Yape (pronto)";
     return "Pasarela (pronto)";
+  };
+
+  const choosePay = (m: PaymentMethod) => {
+    if (!paymentEnabled[m]) return;
+    setPayMethod(m);
+  };
+
+  // ✅ Agregar desde grilla:
+  // Si el producto tiene variantes, NO se puede agregar directo → mandamos al detalle.
+  const add = (p: StoreProduct) => {
+    const hasVariants = Boolean((p as any).has_variants);
+
+    if (hasVariants) {
+      navigate(`/tienda/${p.slug}`);
+      return;
+    }
+
+    setCart((prev) =>
+      addToCart(prev as any, {
+        product_id: p.id,
+        slug: p.slug,
+        name: p.name,
+        price: Number((p as any).price ?? 0),
+        image: (p as any).image ?? null,
+        qty: 1,
+
+        // ✅ este producto NO requiere variante
+        requires_variant: false,
+        variant_id: null,
+      } as any)
+    );
+    setCartOpen(true);
   };
 
   // ✅ Crea pedido en backend y luego abre WhatsApp con código
@@ -180,6 +314,11 @@ export default function StoreFront() {
       return;
     }
 
+    if (missingVariant) {
+      setCheckoutError("Hay productos en el carrito sin variante seleccionada. Entra al detalle y elige la variante.");
+      return;
+    }
+
     setCheckoutLoading(true);
 
     let orderCode: string | null = null;
@@ -191,25 +330,26 @@ export default function StoreFront() {
         customer_email: null,
         payment_method: payMethod,
         notes: null,
-        items: cart.map((it) => ({
+        items: cart.map((it: any) => ({
           product_id: it.product_id,
+          variant_id: it.variant_id ?? null,
           qty: it.qty,
           size: it.size ?? null,
           color: it.color ?? null,
-          oz: (it as any).oz ?? null,
+          oz: it.oz ?? null,
         })),
       };
 
       const res = await api.post("/api/store/orders", payload);
       orderCode = res.data?.data?.code ?? null;
-    } catch {
-      // si falla, igual abrimos WhatsApp, pero avisamos
-      setCheckoutError("No se pudo registrar el pedido en el sistema, pero puedes continuar por WhatsApp.");
+    } catch (e: any) {
+      const msg = e?.response?.data?.message;
+      setCheckoutError(msg || "No se pudo registrar el pedido en el sistema, pero puedes continuar por WhatsApp.");
     } finally {
       setCheckoutLoading(false);
     }
 
-    const lines = cart.map((it) => {
+    const lines = cart.map((it: any) => {
       const variant = getVariantLabel(it);
       const sub = Number(it.price ?? 0) * it.qty;
       return `• ${it.name} ${variant} x${it.qty} — ${money(sub)}`;
@@ -225,27 +365,20 @@ export default function StoreFront() {
       (name ? `Nombre: ${name}\n\n` : `\n`) +
       `¿Cómo coordinamos entrega o recojo?`;
 
-    window.open(
-      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`,
-      "_blank",
-      "noopener,noreferrer"
-    );
-  };
-
-  const choosePay = (m: PaymentMethod) => {
-    if (!paymentEnabled[m]) return;
-    setPayMethod(m);
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer");
   };
 
   return (
     <section className="pub-container">
       <div className="pub-section">
+        <BannerRotator />
+
         <div className="pub-section__head">
           <h1 className="pub-section__title">Tienda</h1>
           <p className="pub-section__text">Equipamiento y accesorios del Club de Box El Tigre.</p>
         </div>
 
-        <div className="pub-store-toolbar">
+        <div className="pub-store-toolbar pub-store-toolbar--oneRow">
           <input
             className="pub-input pub-store-search"
             placeholder="Buscar guantes, vendas, protección..."
@@ -253,34 +386,35 @@ export default function StoreFront() {
             onChange={(e) => setQ(e.target.value)}
           />
 
-          <div className="pub-store-filters">
-            <select
-              className="pub-input"
-              value={catSlug}
-              onChange={(e) => setCatSlug(e.target.value)}
-              disabled={loadingCats}
-            >
-              <option value="Todos">
-                {loadingCats ? "Cargando categorías..." : "Todas las categorías"}
+          <select
+            className="pub-input pub-store-select"
+            value={catSlug}
+            onChange={(e) => setCatSlug(e.target.value)}
+            disabled={loadingCats}
+            title="Categoría"
+          >
+            <option value="Todos">{loadingCats ? "Cargando..." : "Todas"}</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.slug}>
+                {c.name}
               </option>
+            ))}
+          </select>
 
-              {categories.map((c) => (
-                <option key={c.id} value={c.slug}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+          <select
+            className="pub-input pub-store-select"
+            value={sort}
+            onChange={(e) => setSort(e.target.value as any)}
+            title="Orden"
+          >
+            <option value="featured">Destacados</option>
+            <option value="price_asc">Precio: menor a mayor</option>
+            <option value="price_desc">Precio: mayor a menor</option>
+          </select>
 
-            <select className="pub-input" value={sort} onChange={(e) => setSort(e.target.value as any)}>
-              <option value="featured">Destacados</option>
-              <option value="price_asc">Precio: menor a mayor</option>
-              <option value="price_desc">Precio: mayor a menor</option>
-            </select>
-
-            <button className="pub-btn pub-btn--accent" type="button" onClick={() => setCartOpen(true)}>
-              Carrito ({count})
-            </button>
-          </div>
+          <button className="pub-btn pub-btn--accent pub-store-cartBtn" type="button" onClick={() => setCartOpen(true)}>
+            Carrito ({count})
+          </button>
         </div>
 
         {fetchError && (
@@ -295,47 +429,65 @@ export default function StoreFront() {
               Cargando productos...
             </div>
           ) : (
-            products.map((p: any) => (
-              <div key={p.id} className="pub-card pub-product">
-                <div className="pub-product__img" style={{ backgroundImage: `url(${p.image ?? ""})` }} />
+            products.map((p: any) => {
+              const stock = Number(p.total_stock ?? 0);
+              const hasDiscount = Boolean(p.compare_at_price);
+              const hasVariants = Boolean(p.has_variants);
 
-                <div className="pub-product__body">
-                  <div className="pub-product__top">
-                    <div className="pub-tag">{p.category?.name ?? "Tienda"}</div>
-                  </div>
+              return (
+                <div key={p.id} className="pub-card pub-product">
+                  <Link
+                    to={`/tienda/${p.slug}`}
+                    className="pub-product__img"
+                    style={{ backgroundImage: `url(${p.image ?? ""})` }}
+                    aria-label={`Ver detalle de ${p.name}`}
+                  >
+                    {hasDiscount ? <div className="pub-badge-offer">OFERTA</div> : null}
+                    {stock <= 0 ? <div className="pub-badge-stockout">SIN STOCK</div> : null}
+                  </Link>
 
-                  <div className="pub-product__name">{p.name}</div>
+                  <div className="pub-product__body">
+                    <div className="pub-product__top">
+                      <div className="pub-tag">{p.category?.name ?? "Tienda"}</div>
+                    </div>
 
-                  <div className="pub-product__meta">
-                    <span className="pub-muted">{p.brand ?? "El Tigre"}</span>
-                    <span className="pub-muted">Stock: {Number(p.total_stock ?? 0)}</span>
-                  </div>
+                    <Link to={`/tienda/${p.slug}`} className="pub-product__nameLink">
+                      <div className="pub-product__name">{p.name}</div>
+                    </Link>
 
-                  <div className="pub-product__price">
-                    <span className="pub-price">{money(p.price ?? 0)}</span>
-                    {p.compare_at_price ? (
-                      <span className="pub-price--old">{money(p.compare_at_price)}</span>
-                    ) : null}
-                  </div>
+                    <div className="pub-product__meta">
+                      <span className="pub-muted">{p.brand ?? "El Tigre"}</span>
+                      <span className="pub-muted">Stock: {stock}</span>
+                    </div>
 
-                  <div className="pub-product__actions">
-                    <button
-                      className="pub-btn pub-btn--accent"
-                      type="button"
-                      onClick={() => add(p)}
-                      disabled={Number(p.total_stock ?? 0) <= 0}
-                      title={Number(p.total_stock ?? 0) <= 0 ? "Sin stock" : ""}
-                    >
-                      {Number(p.total_stock ?? 0) <= 0 ? "Sin stock" : "Agregar"}
-                    </button>
+                    <div className="pub-product__price">
+                      <span className="pub-price">{money(p.price ?? 0)}</span>
+                      {p.compare_at_price ? <span className="pub-price--old">{money(p.compare_at_price)}</span> : null}
+                    </div>
 
-                    <button className="pub-btn pub-btn--outline" type="button" onClick={() => setCartOpen(true)}>
-                      Ver carrito
-                    </button>
+                    <div className="pub-product__actions pub-product__actions--3">
+                      <button
+                        className="pub-btn pub-btn--accent"
+                        type="button"
+                        onClick={() => add(p)}
+                        disabled={stock <= 0}
+                        title={stock <= 0 ? "Sin stock" : hasVariants ? "Selecciona variante en detalle" : ""}
+                      >
+                        {stock <= 0 ? "Sin stock" : hasVariants ? "Elegir variante" : "Agregar"}
+                      </button>
+
+                      <Link className="pub-btn pub-btn--outline" to={`/tienda/${p.slug}`}>
+                        Detalle
+                      </Link>
+
+                      <button className="pub-btn pub-btn--outline" type="button" onClick={() => setCartOpen(true)}>
+                        Ver carrito
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
@@ -365,13 +517,22 @@ export default function StoreFront() {
             ) : (
               <>
                 <div className="pub-cart-list">
-                  {cart.map((it, idx) => (
-                    <div key={`${it.product_id}-${idx}`} className="pub-cart-item">
+                  {cart.map((it: any, idx) => (
+                    <div key={`${it.product_id}-${it.variant_id ?? "novar"}-${idx}`} className="pub-cart-item">
                       <div className="pub-cart-item__img" style={{ backgroundImage: `url(${it.image ?? ""})` }} />
+
                       <div className="pub-cart-item__info">
                         <div className="pub-cart-item__name">
                           {it.name} <span className="pub-cart-item__variant">{getVariantLabel(it)}</span>
                         </div>
+
+                        {/* ✅ Aviso SOLO si requiere variante */}
+                        {it.requires_variant && it.variant_id == null ? (
+                          <div className="pub-muted" style={{ fontSize: 12 }}>
+                            ⚠️ Falta variante. Entra al detalle para elegirla.
+                          </div>
+                        ) : null}
+
                         <div className="pub-muted">{money(it.price ?? 0)}</div>
 
                         <div className="pub-cart-item__controls">
@@ -401,12 +562,20 @@ export default function StoreFront() {
                             Quitar
                           </button>
                         </div>
+
+                        {/* ✅ Botón para ir a elegir variante si falta */}
+                        {it.requires_variant && it.variant_id == null ? (
+                          <div style={{ marginTop: 8 }}>
+                            <Link className="pub-btn pub-btn--outline pub-btn--sm" to={`/tienda/${it.slug}`}>
+                              Elegir variante
+                            </Link>
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                   ))}
                 </div>
 
-                {/* ✅ Datos cliente */}
                 <div className="pub-card" style={{ marginTop: 12 }}>
                   <div style={{ fontWeight: 900, marginBottom: 10 }}>Datos para el pedido</div>
                   <div style={{ display: "grid", gap: 10 }}>
@@ -422,6 +591,7 @@ export default function StoreFront() {
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
                     />
+
                     {checkoutError && (
                       <div className="pub-card" style={{ border: "1px solid rgba(255,106,0,.35)" }}>
                         {checkoutError}
@@ -430,7 +600,6 @@ export default function StoreFront() {
                   </div>
                 </div>
 
-                {/* Métodos de pago */}
                 <div className="pub-pay">
                   <div className="pub-pay__title">Método de pago</div>
 
@@ -477,7 +646,7 @@ export default function StoreFront() {
                     onClick={checkoutWhatsApp}
                     disabled={checkoutLoading}
                     aria-busy={checkoutLoading}
-                    title={checkoutLoading ? "Creando pedido..." : ""}
+                    title={checkoutLoading ? "Creando pedido..." : missingVariant ? "Faltan variantes" : ""}
                   >
                     {checkoutLoading ? "Registrando pedido..." : "Finalizar por WhatsApp"}
                   </button>

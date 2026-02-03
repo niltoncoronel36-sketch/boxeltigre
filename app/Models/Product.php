@@ -12,11 +12,6 @@ class Product extends Model
 
     protected $table = 'products';
 
-    /**
-     * ✅ IMPORTANTE:
-     * - total_stock NO debe estar aquí porque es un accesor calculado (no columna)
-     * - stock SÍ debe estar para el modo sin variantes
-     */
     protected $fillable = [
         'product_category_id',
         'name',
@@ -27,7 +22,7 @@ class Product extends Model
         'compare_at_price',
         'currency',
         'has_variants',
-        'stock',       // ✅ columna real (modo sin variantes)
+        'stock',
         'is_active',
     ];
 
@@ -37,9 +32,6 @@ class Product extends Model
         'has_variants' => 'boolean',
         'is_active' => 'boolean',
         'stock' => 'integer',
-
-        // ✅ accesor (opcional, no hace daño)
-        'total_stock' => 'integer',
     ];
 
     public function category()
@@ -64,11 +56,6 @@ class Product extends Model
             ->where('is_primary', true);
     }
 
-    /**
-     * ✅ Stock total calculado:
-     * - si tiene variantes: suma stock de variantes activas
-     * - si no: usa stock del producto (columna)
-     */
     public function getTotalStockAttribute(): int
     {
         if ($this->has_variants) {
@@ -80,11 +67,6 @@ class Product extends Model
         return (int) ($this->stock ?? 0);
     }
 
-    /**
-     * ✅ Precio mínimo mostrado:
-     * - si hay variantes con price_override: usa el mínimo
-     * - si no: usa price del producto
-     */
     public function getDisplayPriceAttribute(): string
     {
         if ($this->has_variants) {

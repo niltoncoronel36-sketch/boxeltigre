@@ -1,0 +1,209 @@
+/* src/pages/Students/components/StudentsTable.css */
+/* Tema BLANCO profesional para tabla de estudiantes */
+
+.st-card{
+  padding: 16px;
+}
+
+/* Header */
+.st-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.st-title{
+  font-size:16px;
+  font-weight:950;
+  color: rgba(14,14,14,.88);
+}
+
+.st-sub{
+  margin-top:6px;
+  font-size:12px;
+  color: rgba(14,14,14,.58);
+}
+
+.st-new{
+  padding: 10px 12px;
+  border-radius: 14px;
+}
+
+/* Toolbar */
+.st-toolbar{
+  margin-top: 12px;
+  display:grid;
+  gap:10px;
+  grid-template-columns: 2fr 1fr;
+  align-items:center;
+}
+
+.st-search{ min-width:0; }
+.st-input{
+  width:100%;
+  border-radius: 14px;
+}
+
+.st-select{
+  min-width: 170px;
+}
+
+/* Error */
+.st-err{
+  margin-top: 12px;
+}
+
+/* Table wrap */
+.st-tableWrap{
+  margin-top: 12px;
+  overflow:auto;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 18px;
+  background: rgba(255,255,255,.98);
+}
+
+/* Table */
+.st-table{
+  width:100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+.st-table thead th{
+  position: sticky;
+  top: 0;
+  z-index: 2;
+
+  text-align:left;
+  padding: 12px 12px;
+  font-size: 12px;
+  letter-spacing: .2px;
+  color: rgba(14,14,14,.62);
+
+  background: rgba(0,0,0,.02);
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  white-space: nowrap;
+}
+
+.st-table tbody td{
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  color: rgba(14,14,14,.78);
+  vertical-align: top;
+}
+
+.st-row{
+  cursor:pointer;
+  transition: background 120ms ease;
+}
+
+.st-row:nth-child(even){
+  background: rgba(0,0,0,.012);
+}
+
+.st-row:hover{
+  background: rgba(255,122,24,.06);
+}
+
+.st-empty{
+  padding: 14px !important;
+  color: rgba(14,14,14,.60);
+  text-align:center;
+}
+
+/* Text helpers */
+.st-name{
+  font-weight: 950;
+  color: rgba(14,14,14,.88);
+}
+
+.st-strong{
+  font-weight: 900;
+  color: rgba(14,14,14,.82);
+}
+
+.st-muted{
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(14,14,14,.56);
+}
+
+.mono{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* Badges */
+.st-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(0,0,0,.03);
+  font-weight: 950;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.st-badge.is-active{
+  background: rgba(0,180,90,.10);
+  border-color: rgba(0,180,90,.22);
+}
+
+.st-badge.is-inactive{
+  background: rgba(255,45,45,.10);
+  border-color: rgba(255,45,45,.22);
+}
+
+.st-badge.is-user{
+  background: rgba(0,140,255,.10);
+  border-color: rgba(0,140,255,.20);
+}
+
+/* Tiny action button */
+.st-btnTiny{
+  padding: 8px 10px !important;
+  font-size: 12px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 22px rgba(255,45,45,.12);
+}
+
+/* Footer / Pagination */
+.st-foot{
+  margin-top: 12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.st-foot__left{
+  font-size: 12px;
+  color: rgba(14,14,14,.60);
+}
+
+.st-foot__right{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+.st-pgBtn{
+  padding: 10px 12px;
+  border-radius: 14px;
+}
+
+/* Responsive */
+@media (max-width: 740px){
+  .st-toolbar{
+    grid-template-columns: 1fr;
+  }
+  .st-select{
+    min-width: 100%;
+  }
+}

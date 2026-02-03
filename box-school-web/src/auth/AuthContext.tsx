@@ -4,7 +4,7 @@ import { getApiErrorMessage } from "../services/api";
 
 export type Role = {
   id: number;
-  key: string;   // admin | student | cashier | trainer ...
+  key: string; // admin | student | cashier | trainer ...
   name: string;
 };
 
@@ -24,14 +24,22 @@ type AuthState = {
 
 const AuthContext = createContext<AuthState | null>(null);
 
-// ✅ Flag para evitar llamar /me si sabemos que NO hay sesión
-const AUTH_FLAG = "has_session";
+const TOKEN_KEY = "token"; // ✅ token Sanctum (Bearer)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<auth.User | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  function clearAuth() {
+    setUser(null);
+    setRoles([]);
+    localStorage.removeItem(TOKEN_KEY);
+    // Si en tu app guardas user/roles, límpialos también (opcional)
+    localStorage.removeItem("user");
+    localStorage.removeItem("roles");
+  }
 
   function setAuthPayload(payload: any) {
     setUser(payload?.user ?? null);
@@ -41,14 +49,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function refresh() {
     setError(null);
 
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      // ✅ No hay token -> no intentamos /me (evita 401)
+      setLoading(false);
+      setUser(null);
+      setRoles([]);
+      return;
+    }
+
     try {
       const payload = await auth.me(); // { user, roles }
       setAuthPayload(payload);
-      localStorage.setItem(AUTH_FLAG, "1");
+
+      // opcional: cache
+      localStorage.setItem("user", JSON.stringify(payload.user ?? null));
+      localStorage.setItem("roles", JSON.stringify(payload.roles ?? []));
     } catch {
-      setUser(null);
-      setRoles([]);
-      localStorage.removeItem(AUTH_FLAG);
+      clearAuth();
     } finally {
       setLoading(false);
     }
@@ -59,13 +77,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
 
     try {
-      const payload = await auth.login(email, password); // { user, roles }
+      const payload = await auth.login(email, password); // { token, user, roles }
+
+      // ✅ Guardar token para que axios lo mande (Bearer)
+      localStorage.setItem(TOKEN_KEY, payload.token);
+
+      // opcional cache
+      localStorage.setItem("user", JSON.stringify(payload.user ?? null));
+      localStorage.setItem("roles", JSON.stringify(payload.roles ?? []));
+
       setAuthPayload(payload);
-      localStorage.setItem(AUTH_FLAG, "1");
     } catch (e) {
-      setUser(null);
-      setRoles([]);
-      localStorage.removeItem(AUTH_FLAG);
+      clearAuth();
       setError(getApiErrorMessage(e));
       throw e;
     } finally {
@@ -78,26 +101,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
 
     try {
+      // si el token ya no existe, no pasa nada
       await auth.logout();
-      setUser(null);
-      setRoles([]);
-      localStorage.removeItem(AUTH_FLAG);
     } catch (e) {
+      // aunque falle logout, igual limpiamos local
       setError(getApiErrorMessage(e));
-      throw e;
     } finally {
+      clearAuth();
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    // ✅ Si nunca hubo sesión, no llamamos /me (evita 401 en consola)
-    const hasSession = localStorage.getItem(AUTH_FLAG) === "1";
-    if (!hasSession) {
-      setLoading(false);
-      return;
-    }
-
+    // ✅ Si hay token -> intenta recuperar sesión con /me
     refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

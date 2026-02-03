@@ -1,0 +1,18 @@
+/* src/pages/Students/StudentsPage.css */
+
+.students-page{
+  width: 100%;
+}
+
+.students-page__inner{
+  display: grid;
+  gap: 14px;
+}
+
+/* Si quieres un ancho máximo pro (como admin panel moderno) */
+@media (min-width: 1200px){
+  .students-page__inner{
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}

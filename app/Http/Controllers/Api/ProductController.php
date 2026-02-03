@@ -139,84 +139,88 @@ class ProductController extends Controller
     /**
      * GET /api/products/{slug}
      */
-    public function show(string $slug)
-    {
-        $product = Product::query()
-            ->with([
-                'category:id,name,slug',
-                'images:id,product_id,product_variant_id,path,alt,sort_order,is_primary',
-                'primaryImage:id,product_id,path,alt,is_primary',
-                'variants:id,product_id,sku,size,color,oz,stock,price_override,is_active,label',
-            ])
-            ->where('is_active', true)
-            ->where('slug', $slug)
-            ->first();
+    /**
+ * GET /api/products/{slug}
+ */
+public function show(string $slug)
+{
+    $product = Product::query()
+        ->with([
+            'category',      // ✅ sin lista de columnas
+            'images',        // ✅ evita Unknown column
+            'primaryImage',
+            'variants',      // ✅ evita Unknown column
+        ])
+        ->where('is_active', true)
+        ->where('slug', $slug)
+        ->first();
 
-        if (!$product) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Producto no encontrado',
-                'data' => null,
-            ], 404);
-        }
+    if (!$product) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Producto no encontrado',
+            'data' => null,
+        ], 404);
+    }
 
-        $variants = $product->variants
-            ->where('is_active', true)
-            ->values()
-            ->map(function ($v) use ($product) {
-                $finalPrice = $v->price_override !== null ? (float) $v->price_override : (float) $product->price;
+    $variants = collect($product->variants ?? [])
+        ->filter(fn ($v) => (bool) ($v->is_active ?? true))
+        ->values()
+        ->map(function ($v) use ($product) {
+            $finalPrice = ($v->price_override ?? null) !== null
+                ? (float) $v->price_override
+                : (float) $product->price;
 
-                return [
-                    'id' => $v->id,
-                    'sku' => $v->sku,
-                    'size' => $v->size,
-                    'color' => $v->color,
-                    'oz' => $v->oz,
-                    'stock' => (int) $v->stock,
-                    'price' => $finalPrice,
-                    'label' => $v->label,
-                ];
-            });
-
-        $images = $product->images->map(function ($img) {
             return [
-                'id' => $img->id,
-                'path' => $this->resolveImage($img->path),
-                'alt' => $img->alt,
-                'sort_order' => (int) $img->sort_order,
-                'is_primary' => (bool) $img->is_primary,
-                'product_variant_id' => $img->product_variant_id,
+                'id' => $v->id,
+                'sku' => $v->sku ?? null,
+                'size' => $v->size ?? null,
+                'color' => $v->color ?? null,
+                'oz' => $v->oz ?? null,
+                'stock' => (int) ($v->stock ?? 0),
+                'price' => $finalPrice,
+                'label' => $v->label ?? null,
             ];
         });
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Producto',
-            'data' => [
-                'id' => $product->id,
-                'name' => $product->name,
-                'slug' => $product->slug,
-                'brand' => $product->brand,
-                'description' => $product->description,
-                'category' => $product->category ? [
-                    'id' => $product->category->id,
-                    'name' => $product->category->name,
-                    'slug' => $product->category->slug,
-                ] : null,
-                'price' => (float) $product->price,
-                'compare_at_price' => $product->compare_at_price ? (float) $product->compare_at_price : null,
-                'currency' => $product->currency,
-                'has_variants' => (bool) $product->has_variants,
-                'total_stock' => (int) $product->total_stock,
+    $images = collect($product->images ?? [])->map(function ($img) {
+        return [
+            'id' => $img->id,
+            'path' => $this->resolveImage($img->path ?? null),
+            'alt' => $img->alt ?? null,
+            'sort_order' => (int) ($img->sort_order ?? 0),
+            'is_primary' => (bool) ($img->is_primary ?? false),
+            'product_variant_id' => $img->product_variant_id ?? null,
+        ];
+    });
 
-                // ✅ imagen principal directa (útil para frontend)
-                'image' => $this->resolveImage($product->primaryImage?->path),
+    return response()->json([
+        'success' => true,
+        'message' => 'Producto',
+        'data' => [
+            'id' => $product->id,
+            'name' => $product->name,
+            'slug' => $product->slug,
+            'brand' => $product->brand,
+            'description' => $product->description,
+            'category' => $product->category ? [
+                'id' => $product->category->id,
+                'name' => $product->category->name,
+                'slug' => $product->category->slug,
+            ] : null,
+            'price' => (float) $product->price,
+            'compare_at_price' => $product->compare_at_price ? (float) $product->compare_at_price : null,
+            'currency' => $product->currency,
+            'has_variants' => (bool) $product->has_variants,
+            'total_stock' => (int) $product->total_stock,
+            'image' => $this->resolveImage($product->primaryImage?->path),
 
-                'images' => $images,
-                'variants' => $variants,
-            ],
-        ]);
-    }
+            'images' => $images,
+            'variants' => $variants,
+        ],
+    ]);
+}
+
 
     /**
      * ✅ ADMIN: POST /api/products  (auth:sanctum)

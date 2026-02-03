@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { getApiErrorMessage } from "../../services/api";
 import type { Student, StudentPayload } from "../../services/students";
 import { createStudentUser, getStudent } from "../../services/students"; // ✅ IMPORTADO getStudent
+import "./StudentsPage.css";
+
 
 import { useStudents } from "./hooks/useStudents";
 import { StudentsTable } from "./components/StudentsTable";
@@ -187,7 +189,8 @@ export default function StudentsPage() {
   }
 
   return (
-    <div className="grid">
+  <div className="students-page">
+    <div className="students-page__inner">
       <StudentsTable
         items={students.items}
         total={students.total}
@@ -237,5 +240,7 @@ export default function StudentsPage() {
         onDeleteStudent={onDeleteStudent}
       />
     </div>
-  );
+  </div>
+);
+
 }

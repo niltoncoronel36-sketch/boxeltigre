@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Users,
@@ -45,28 +45,22 @@ function formatLimaNow(d: Date) {
   }).format(d);
 }
 
-function todayYmd() {
-  const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
+/** ✅ YYYY-MM-DD en zona Lima (en-CA => 2026-02-02) */
+function ymdLima(d = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Lima" }).format(d);
 }
 
-function firstDayOfMonthYmd() {
-  const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  return `${yyyy}-${mm}-01`;
+/** ✅ Sumar días manteniendo la fecha en Lima (sin desfase) */
+function addDaysYmdLima(baseYmd: string, delta: number): string {
+  // Lima no tiene DST, usamos -05:00 para que no se “mueva” por timezone local del navegador
+  const dt = new Date(`${baseYmd}T12:00:00-05:00`);
+  dt.setDate(dt.getDate() + delta);
+  return ymdLima(dt);
 }
 
-function addDaysYmd(baseYmd: string, delta: number) {
-  const d = new Date(baseYmd + "T00:00:00");
-  d.setDate(d.getDate() + delta);
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
+function firstDayOfMonthYmdLima(): string {
+  const today = ymdLima();
+  return `${today.slice(0, 7)}-01`;
 }
 
 function ymd(v: any) {
@@ -98,24 +92,32 @@ type Stat = {
 function MiniBars(props: {
   title: string;
   subtitle?: string;
-  data: Array<{ label: string; value: number }>;
+  data: Array<{ label: string; value: number; tip?: string }>;
   format?: (v: number) => string;
+  totalLabel?: string;
 }) {
-  const { title, subtitle, data, format } = props;
+  const { title, subtitle, data, format, totalLabel } = props;
   const max = Math.max(1, ...data.map((d) => d.value));
+  const total = data.reduce((acc, d) => acc + d.value, 0);
 
   return (
     <div className="dash-panel">
       <div className="dash-panel-head">
         <div className="dash-panel-title">{title}</div>
-        {subtitle ? <div className="dash-panel-sub">{subtitle}</div> : null}
+        <div className="dash-panel-subRow">
+          {subtitle ? <div className="dash-panel-sub">{subtitle}</div> : <div />}
+          <div className="dash-panel-total">
+            {totalLabel ? totalLabel : "Total"}:{" "}
+            <b>{format ? format(total) : String(total)}</b>
+          </div>
+        </div>
       </div>
 
       <div className="dash-chart">
         {data.map((d) => {
           const h = Math.round((d.value / max) * 100);
           return (
-            <div key={d.label} className="dash-bar">
+            <div key={d.label} className="dash-bar" title={d.tip ?? `${d.label}: ${format ? format(d.value) : d.value}`}>
               <div className="dash-bar-col">
                 <div className="dash-bar-fill" style={{ height: `${h}%` }} />
               </div>
@@ -133,10 +135,17 @@ export default function DashboardPage() {
   const navigate = useNavigate();
 
   const [now, setNow] = useState(() => new Date());
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
 
-  // stats (lo tuyo)
+  // ✅ loaders por sección
+  const [busyStudents, setBusyStudents] = useState(false);
+  const [busyReports, setBusyReports] = useState(false);
+
+  // error general + warnings por sección
+  const [err, setErr] = useState<string | null>(null);
+  const [warnStudents, setWarnStudents] = useState<string | null>(null);
+  const [warnReports, setWarnReports] = useState<string | null>(null);
+
+  // stats
   const [studentsTotal, setStudentsTotal] = useState<number>(0);
   const [studentsActive, setStudentsActive] = useState<number>(0);
   const [studentsInactive, setStudentsInactive] = useState<number>(0);
@@ -144,29 +153,38 @@ export default function DashboardPage() {
   const [enrEnded, setEnrEnded] = useState<number>(0);
   const [latestStudents, setLatestStudents] = useState<Student[]>([]);
 
-  // ✅ reportes (nuevo)
+  // reportes
   const [financeRows, setFinanceRows] = useState<FinanceRow[]>([]);
   const [installmentRows, setInstallmentRows] = useState<InstallmentRow[]>([]);
   const [attendanceRows, setAttendanceRows] = useState<AttendanceRow[]>([]);
   const [storeRows, setStoreRows] = useState<StoreRow[]>([]);
+
+  // evita setState si sales de la página
+  const aliveRef = useRef(true);
+  useEffect(() => {
+    aliveRef.current = true;
+    return () => {
+      aliveRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
-  const monthFrom = firstDayOfMonthYmd();
-  const monthTo = todayYmd();
-  const last14From = addDaysYmd(monthTo, -13); // 14 días contando hoy
-  const last7From = addDaysYmd(monthTo, -6);
+  // ✅ Fechas Lima (consistentes)
+  const monthTo = ymdLima();
+  const monthFrom = firstDayOfMonthYmdLima();
+  const last14From = addDaysYmdLima(monthTo, -13);
+  const last7From = addDaysYmdLima(monthTo, -6);
 
-  async function load() {
-    setBusy(true);
-    setErr(null);
+  async function loadStudentsBlock() {
+    setWarnStudents(null);
+    setBusyStudents(true);
 
     try {
-      // ✅ tu carga original
-      const [stAll, stAct, stInact, eAct, eEnd, stLatest] = await Promise.all([
+      const results = await Promise.allSettled([
         listStudents({ page: 1, perPage: 1, active: "" }),
         listStudents({ page: 1, perPage: 1, active: "1" }),
         listStudents({ page: 1, perPage: 1, active: "0" }),
@@ -175,47 +193,99 @@ export default function DashboardPage() {
         listStudents({ page: 1, perPage: 8, active: "" }),
       ]);
 
-      setStudentsTotal(stAll.total ?? 0);
-      setStudentsActive(stAct.total ?? 0);
-      setStudentsInactive(stInact.total ?? 0);
-      setEnrActive(eAct.total ?? 0);
-      setEnrEnded(eEnd.total ?? 0);
-      setLatestStudents(stLatest.data ?? []);
+      const [stAll, stAct, stInact, eAct, eEnd, stLatest] = results;
 
-      // ✅ Reportes: usamos LIST para poder graficar
-      const base: ReportFilters = { from: monthFrom, to: monthTo, category_id: "", method: "", status: "", q: "", group_by: "day" };
-      const last14: ReportFilters = { ...base, from: last14From, to: monthTo };
-      const last7: ReportFilters = { ...base, from: last7From, to: monthTo };
+      const pick = <T,>(r: PromiseSettledResult<T>): T | null =>
+        r.status === "fulfilled" ? r.value : null;
 
-      const [fin, inst, att, store] = await Promise.all([
-        reportsApi.financeList(last14),          // últimos 14 días para gráfica
-        reportsApi.installmentsList(base),       // todo el mes para morosidad (puedes ajustar)
-        reportsApi.attendanceList(last7),        // últimos 7 días
-        reportsApi.storeList(base),              // tienda mes
-      ]);
+      const a = pick(stAll);
+      const b = pick(stAct);
+      const c = pick(stInact);
+      const d = pick(eAct);
+      const e = pick(eEnd);
+      const f = pick(stLatest);
 
-      setFinanceRows(fin?.rows ?? []);
-      setInstallmentRows(inst?.rows ?? []);
-      setAttendanceRows(att?.rows ?? []);
-      setStoreRows(store?.rows ?? []);
-    } catch (e: any) {
-      setErr(e?.response?.data?.message ?? e?.message ?? "Error cargando dashboard");
+      if (!aliveRef.current) return;
+
+      setStudentsTotal((a as any)?.total ?? 0);
+      setStudentsActive((b as any)?.total ?? 0);
+      setStudentsInactive((c as any)?.total ?? 0);
+      setEnrActive((d as any)?.total ?? 0);
+      setEnrEnded((e as any)?.total ?? 0);
+      setLatestStudents((f as any)?.data ?? []);
+
+      // warning si algo falló
+      const anyRejected = results.some((r) => r.status === "rejected");
+      if (anyRejected) setWarnStudents("Algunas métricas de alumnos no pudieron cargarse (revisa API).");
     } finally {
-      setBusy(false);
+      if (aliveRef.current) setBusyStudents(false);
     }
   }
 
+  async function loadReportsBlock() {
+    setWarnReports(null);
+    setBusyReports(true);
+
+    try {
+      const base: ReportFilters = {
+        from: monthFrom,
+        to: monthTo,
+        category_id: "",
+        method: "",
+        status: "",
+        q: "",
+        group_by: "day",
+      };
+
+      const last14: ReportFilters = { ...base, from: last14From, to: monthTo };
+      const last7: ReportFilters = { ...base, from: last7From, to: monthTo };
+
+      const results = await Promise.allSettled([
+        reportsApi.financeList(last14),
+        reportsApi.installmentsList(base),
+        reportsApi.attendanceList(last7),
+        reportsApi.storeList(base),
+      ]);
+
+      const pick = <T,>(r: PromiseSettledResult<T>): T | null =>
+        r.status === "fulfilled" ? r.value : null;
+
+      const fin = pick(results[0]);
+      const inst = pick(results[1]);
+      const att = pick(results[2]);
+      const store = pick(results[3]);
+
+      if (!aliveRef.current) return;
+
+      setFinanceRows((fin as any)?.rows ?? []);
+      setInstallmentRows((inst as any)?.rows ?? []);
+      setAttendanceRows((att as any)?.rows ?? []);
+      setStoreRows((store as any)?.rows ?? []);
+
+      const anyRejected = results.some((r) => r.status === "rejected");
+      if (anyRejected) setWarnReports("Algunos reportes no pudieron cargarse (revisa endpoints /api/reports/*).");
+    } finally {
+      if (aliveRef.current) setBusyReports(false);
+    }
+  }
+
+  async function loadAll() {
+    setErr(null);
+    // cargamos en paralelo y no “rompemos” todo si falla una parte
+    await Promise.allSettled([loadStudentsBlock(), loadReportsBlock()]);
+  }
+
   useEffect(() => {
-    load();
+    loadAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ✅ KPIs nuevos
+  // ✅ KPIs
   const income14Cents = useMemo(() => sumPaidCents(financeRows), [financeRows]);
   const storeMonthCents = useMemo(() => sumOrderCents(storeRows), [storeRows]);
 
   const overdue = useMemo(() => {
-    const today = todayYmd();
+    const today = ymdLima();
     return installmentRows.filter((r) => {
       const d = ymd(r.due_on);
       const rem = remainingCents(r);
@@ -229,103 +299,85 @@ export default function DashboardPage() {
   );
 
   const topDebtors = useMemo(() => {
-    // agrupar por alumno (dni+nombre)
-    const map = new Map<string, { key: string; name: string; dni: string; category: string; debt: number; late: number }>();
+    const map = new Map<
+      string,
+      { key: string; name: string; dni: string; category: string; debt: number; late: number }
+    >();
 
     overdue.forEach((r) => {
-      const name = String(r.student_name ?? "—");
-      const dni = String(r.document_number ?? "—");
-      const cat = String(r.category_name ?? "—");
+      const name = String((r as any).student_name ?? "—");
+      const dni = String((r as any).document_number ?? "—");
+      const cat = String((r as any).category_name ?? "—");
       const key = `${dni}__${name}`;
 
       const debt = remainingCents(r);
-      const late = Number(r.days_late ?? 0);
+      const late = Number((r as any).days_late ?? 0);
 
       const prev = map.get(key);
-      if (!prev) {
-        map.set(key, { key, name, dni, category: cat, debt, late });
-      } else {
+      if (!prev) map.set(key, { key, name, dni, category: cat, debt, late });
+      else {
         prev.debt += debt;
         prev.late = Math.max(prev.late, late);
       }
     });
 
-    return Array.from(map.values())
-      .sort((a, b) => b.debt - a.debt)
-      .slice(0, 6);
+    return Array.from(map.values()).sort((a, b) => b.debt - a.debt).slice(0, 6);
   }, [overdue]);
 
-  // ✅ series para bar chart ingresos 14 días
+  // ✅ series ingresos 14 días
   const income14Series = useMemo(() => {
-    const days = Array.from({ length: 14 }, (_, i) => addDaysYmd(last14From, i));
+    const days = Array.from({ length: 14 }, (_, i) => addDaysYmdLima(last14From, i));
     const sums = new Map<string, number>();
+
     financeRows.forEach((r) => {
       const d = ymd(r.paid_on);
       if (!d) return;
       sums.set(d, (sums.get(d) ?? 0) + Number(r.paid_cents ?? 0));
     });
 
-    return days.map((d) => ({
-      label: d.slice(5), // MM-DD
-      value: sums.get(d) ?? 0,
-    }));
+    return days.map((d) => {
+      const v = sums.get(d) ?? 0;
+      return {
+        label: d.slice(5), // MM-DD
+        value: v,
+        tip: `${d} • ${moneyPENFromCents(v)}`,
+      };
+    });
   }, [financeRows, last14From]);
 
+  // ✅ series asistencia 7 días
   const attendance7Series = useMemo(() => {
-    const days = Array.from({ length: 7 }, (_, i) => addDaysYmd(last7From, i));
+    const days = Array.from({ length: 7 }, (_, i) => addDaysYmdLima(last7From, i));
     const sums = new Map<string, number>();
+
     attendanceRows.forEach((r) => {
-      const d = ymd(r.date);
+      const d = ymd((r as any).date);
       if (!d) return;
       sums.set(d, (sums.get(d) ?? 0) + 1);
     });
 
-    return days.map((d) => ({
-      label: d.slice(5),
-      value: sums.get(d) ?? 0,
-    }));
+    return days.map((d) => {
+      const v = sums.get(d) ?? 0;
+      return {
+        label: d.slice(5),
+        value: v,
+        tip: `${d} • ${v} asistencias`,
+      };
+    });
   }, [attendanceRows, last7From]);
 
   const stats: Stat[] = useMemo(
     () => [
-      {
-        label: "Estudiantes",
-        value: String(studentsTotal),
-        hint: "Total registrados",
-        icon: <Users size={18} />,
-        tone: "info",
-      },
-      {
-        label: "Activos",
-        value: String(studentsActive),
-        hint: "Cuentas activas",
-        icon: <UserCheck size={18} />,
-        tone: "ok",
-      },
-      {
-        label: "Inactivos",
-        value: String(studentsInactive),
-        hint: "Cuentas inactivas",
-        icon: <UserX size={18} />,
-        tone: "warn",
-      },
-      {
-        label: "Matrículas activas",
-        value: String(enrActive),
-        hint: "Status = active",
-        icon: <GraduationCap size={18} />,
-        tone: "ok",
-      },
-      {
-        label: "Finalizadas",
-        value: String(enrEnded),
-        hint: "Status = ended",
-        icon: <CalendarDays size={18} />,
-        tone: "info",
-      },
+      { label: "Estudiantes", value: String(studentsTotal), hint: "Total registrados", icon: <Users size={18} />, tone: "info" },
+      { label: "Activos", value: String(studentsActive), hint: "Cuentas activas", icon: <UserCheck size={18} />, tone: "ok" },
+      { label: "Inactivos", value: String(studentsInactive), hint: "Cuentas inactivas", icon: <UserX size={18} />, tone: "warn" },
+      { label: "Matrículas activas", value: String(enrActive), hint: "Status = active", icon: <GraduationCap size={18} />, tone: "ok" },
+      { label: "Finalizadas", value: String(enrEnded), hint: "Status = ended", icon: <CalendarDays size={18} />, tone: "info" },
     ],
     [studentsTotal, studentsActive, studentsInactive, enrActive, enrEnded]
   );
+
+  const anyBusy = busyStudents || busyReports;
 
   return (
     <div className="dash">
@@ -335,6 +387,9 @@ export default function DashboardPage() {
           <div className="dash-sub">
             Hora Perú (Lima): <b>{formatLimaNow(now)}</b>
           </div>
+          <div className="dash-sub2">
+            Rango reportes: <span className="mono">{monthFrom}</span> → <span className="mono">{monthTo}</span>
+          </div>
         </div>
 
         <div className="dash-actions">
@@ -343,36 +398,42 @@ export default function DashboardPage() {
             <span>Reportes</span>
           </button>
 
-          <button className="dash-btn" onClick={load} disabled={busy}>
-            <RefreshCw size={16} className={busy ? "spin" : ""} />
-            <span>{busy ? "Cargando..." : "Refrescar"}</span>
+          <button className="dash-btn" onClick={loadAll} disabled={anyBusy}>
+            <RefreshCw size={16} className={anyBusy ? "spin" : ""} />
+            <span>{anyBusy ? "Actualizando..." : "Refrescar"}</span>
           </button>
         </div>
       </div>
 
       {err && <div className="dash-alert">{err}</div>}
+      {warnStudents && <div className="dash-warn">{warnStudents}</div>}
+      {warnReports && <div className="dash-warn">{warnReports}</div>}
 
-      {/* ✅ tus stats (igual) */}
+      {/* Stats */}
       <section className="dash-grid">
         {stats.map((s) => (
           <div key={s.label} className={`dash-card ${s.tone ?? ""}`}>
             <div className="dash-card-ico">{s.icon}</div>
             <div className="dash-card-body">
               <div className="dash-card-label">{s.label}</div>
-              <div className="dash-card-value">{s.value}</div>
+              <div className="dash-card-value">
+                {busyStudents ? <span className="skeleton w60" /> : s.value}
+              </div>
               {s.hint && <div className="dash-card-hint">{s.hint}</div>}
             </div>
           </div>
         ))}
 
-        {/* ✅ KPIs nuevos */}
+        {/* KPIs */}
         <div className="dash-card info">
           <div className="dash-card-ico">
             <Wallet size={18} />
           </div>
           <div className="dash-card-body">
             <div className="dash-card-label">Ingresos (14 días)</div>
-            <div className="dash-card-value">{moneyPENFromCents(income14Cents)}</div>
+            <div className="dash-card-value">
+              {busyReports ? <span className="skeleton w80" /> : moneyPENFromCents(income14Cents)}
+            </div>
             <div className="dash-card-hint">Pagos registrados (cuotas + matrícula)</div>
           </div>
         </div>
@@ -383,8 +444,10 @@ export default function DashboardPage() {
           </div>
           <div className="dash-card-body">
             <div className="dash-card-label">Deuda vencida</div>
-            <div className="dash-card-value">{moneyPENFromCents(overdueDebtCents)}</div>
-            <div className="dash-card-hint">{overdue.length} cuotas vencidas</div>
+            <div className="dash-card-value">
+              {busyReports ? <span className="skeleton w80" /> : moneyPENFromCents(overdueDebtCents)}
+            </div>
+            <div className="dash-card-hint">{busyReports ? "—" : `${overdue.length} cuotas vencidas`}</div>
           </div>
         </div>
 
@@ -394,19 +457,22 @@ export default function DashboardPage() {
           </div>
           <div className="dash-card-body">
             <div className="dash-card-label">Tienda (mes)</div>
-            <div className="dash-card-value">{moneyPENFromCents(storeMonthCents)}</div>
-            <div className="dash-card-hint">{storeRows.length} pedidos listados</div>
+            <div className="dash-card-value">
+              {busyReports ? <span className="skeleton w80" /> : moneyPENFromCents(storeMonthCents)}
+            </div>
+            <div className="dash-card-hint">{busyReports ? "—" : `${storeRows.length} pedidos listados`}</div>
           </div>
         </div>
       </section>
 
-      {/* ✅ Gráficas */}
+      {/* Charts + Quick */}
       <section className="dash-three">
         <MiniBars
           title="Ingresos últimos 14 días"
           subtitle={`${last14From} → ${monthTo}`}
           data={income14Series}
-          format={(v) => (v ? `S/ ${(v / 100).toFixed(0)}` : "—")}
+          format={(v) => `S/ ${(v / 100).toFixed(0)}`}
+          totalLabel="Total 14d"
         />
 
         <MiniBars
@@ -414,11 +480,13 @@ export default function DashboardPage() {
           subtitle={`${last7From} → ${monthTo}`}
           data={attendance7Series}
           format={(v) => String(v)}
+          totalLabel="Total 7d"
         />
 
         <div className="dash-panel">
           <div className="dash-panel-head">
             <div className="dash-panel-title">Accesos rápidos</div>
+            <div className="dash-panel-sub">Atajos del panel</div>
           </div>
 
           <div className="dash-quick">
@@ -448,17 +516,17 @@ export default function DashboardPage() {
           </div>
 
           <div className="dash-note">
-            * Este dashboard usa los endpoints /api/reports/* para gráficos y KPIs.
+            * Gráficas/KPIs usan endpoints <span className="mono">/api/reports/*</span>.
           </div>
         </div>
       </section>
 
-      {/* ✅ Listas */}
+      {/* Lists */}
       <section className="dash-two">
         <div className="dash-panel">
           <div className="dash-panel-head">
             <div className="dash-panel-title">Top morosos (deuda vencida)</div>
-            <div className="dash-panel-sub">Basado en cuotas con due_on &lt; hoy</div>
+            <div className="dash-panel-sub">Cuotas con due_on &lt; hoy (Lima)</div>
           </div>
 
           <div className="dash-table-wrap">
@@ -470,29 +538,44 @@ export default function DashboardPage() {
                   <th>Categoría</th>
                   <th className="tr">Deuda</th>
                   <th className="tr">Atraso</th>
+                  <th className="tr">Acción</th>
                 </tr>
               </thead>
               <tbody>
-                {topDebtors.map((d) => (
-                  <tr key={d.key}>
-                    <td className="name">{d.name}</td>
-                    <td className="mono">{d.dni}</td>
-                    <td>{d.category}</td>
-                    <td className="tr">
-                      <span className="money">{moneyPENFromCents(d.debt)}</span>
-                    </td>
-                    <td className="tr">
-                      <span className="pill warn">{d.late}d</span>
-                    </td>
-                  </tr>
-                ))}
-
-                {topDebtors.length === 0 && (
+                {busyReports ? (
                   <tr>
-                    <td colSpan={5} className="empty">
-                      No hay morosidad (o aún no hay cuotas cargadas).
-                    </td>
+                    <td colSpan={6} className="empty">Cargando morosidad...</td>
                   </tr>
+                ) : (
+                  <>
+                    {topDebtors.map((d) => (
+                      <tr key={d.key}>
+                        <td className="name">{d.name}</td>
+                        <td className="mono">{d.dni}</td>
+                        <td>{d.category}</td>
+                        <td className="tr">
+                          <span className="money">{moneyPENFromCents(d.debt)}</span>
+                        </td>
+                        <td className="tr">
+                          <span className="pill warn">{d.late}d</span>
+                        </td>
+                        <td className="tr">
+                          <button className="dash-btn ghost sm" onClick={() => navigate("/reports")}>
+                            Ver
+                            <ArrowUpRight size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+
+                    {topDebtors.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="empty">
+                          No hay morosidad (o aún no hay cuotas cargadas).
+                        </td>
+                      </tr>
+                    )}
+                  </>
                 )}
               </tbody>
             </table>
@@ -506,10 +589,10 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ✅ tu panel de últimos estudiantes (igual pero mejorado con click) */}
         <div className="dash-panel">
           <div className="dash-panel-head">
             <div className="dash-panel-title">Últimos estudiantes</div>
+            <div className="dash-panel-sub">Click para abrir ficha</div>
           </div>
 
           <div className="dash-table-wrap">
@@ -522,28 +605,39 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {latestStudents.map((s) => {
-                  const full = `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || "—";
-                  const dni = (s as any).document_number ?? "—";
-                  const active = s.is_active === true || s.is_active === (1 as any) || s.is_active === ("1" as any);
-
-                  return (
-                    <tr key={s.id} className="row-click" onClick={() => navigate(`/students`)}>
-                      <td className="name">{full}</td>
-                      <td className="mono">{dni}</td>
-                      <td>
-                        <span className={`pill ${active ? "ok" : "bad"}`}>{active ? "ACTIVO" : "INACTIVO"}</span>
-                      </td>
-                    </tr>
-                  );
-                })}
-
-                {latestStudents.length === 0 && (
+                {busyStudents ? (
                   <tr>
-                    <td colSpan={3} className="empty">
-                      No hay datos.
-                    </td>
+                    <td colSpan={3} className="empty">Cargando...</td>
                   </tr>
+                ) : (
+                  <>
+                    {latestStudents.map((s) => {
+                      const full = `${(s as any).first_name ?? ""} ${(s as any).last_name ?? ""}`.trim() || (s as any).name || "—";
+                      const dni = (s as any).document_number ?? (s as any).dni ?? "—";
+                      const active = (s as any).is_active === true || (s as any).is_active === 1 || (s as any).is_active === "1";
+
+                      return (
+                        <tr
+                          key={(s as any).id}
+                          className="row-click"
+                          onClick={() => navigate(`/students/${(s as any).id}/enrollment-sheet`)}
+                          title="Abrir ficha"
+                        >
+                          <td className="name">{full}</td>
+                          <td className="mono">{dni}</td>
+                          <td>
+                            <span className={`pill ${active ? "ok" : "bad"}`}>{active ? "ACTIVO" : "INACTIVO"}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+
+                    {latestStudents.length === 0 && (
+                      <tr>
+                        <td colSpan={3} className="empty">No hay datos.</td>
+                      </tr>
+                    )}
+                  </>
                 )}
               </tbody>
             </table>
@@ -558,9 +652,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {busy ? <div className="dash-loading">Actualizando datos...</div> : null}
+      {anyBusy ? <div className="dash-loading">Actualizando datos...</div> : null}
     </div>
   );
 }
-
-

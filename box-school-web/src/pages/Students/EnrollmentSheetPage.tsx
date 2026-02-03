@@ -80,7 +80,6 @@ export default function EnrollmentSheetPage() {
         setEnrollment(current);
 
         // -------- Pagos ----------
-        // cuota mensual:
         const feeFromEnrollment =
           current?.category?.monthly_fee_cents ??
           cats.find((c) => c.id === current?.category_id)?.monthly_fee_cents ??
@@ -97,14 +96,15 @@ export default function EnrollmentSheetPage() {
 
             // status puede ser paid/unpaid/partial/void
             const paid =
-              String(ch.status) === "paid" || (Number(ch.paid_cents ?? 0) >= Number(ch.amount_cents ?? 0) && Number(ch.amount_cents ?? 0) > 0);
+              String(ch.status) === "paid" ||
+              (Number(ch.paid_cents ?? 0) >= Number(ch.amount_cents ?? 0) &&
+                Number(ch.amount_cents ?? 0) > 0);
 
             summary.initial_amount_cents = ch.amount_cents ?? undefined;
             summary.initial_paid = paid;
             summary.initial_paid_on = ch.paid_on ?? null;
             summary.initial_method = (ch.method as any) ?? null;
           } catch {
-            // si no existe el endpoint o no hay registro, lo dejamos en blanco
             summary.initial_paid = false;
           }
         }
@@ -124,13 +124,14 @@ export default function EnrollmentSheetPage() {
     };
   }, [studentId]);
 
+  // ✅ Datos reales sacados de PublicContact
   const club = useMemo(
     () => ({
-      name: "CLUB DE BOX “EL TIGRE”",
-      city: "Huancayo",
-      address: "— (edita aquí tu dirección real)",
+      name: 'CLUB DE BOX "EL TIGRE"',
+      city: "Huancayo, Perú",
+      address: "—",
       phone: "—",
-      whatsapp: "51XXXXXXXXX",
+      whatsapp: "51947637782", // ✅ sin espacios
       facebook: "@eltigrebox",
       tiktok: "@eltigrebox",
       website: "—",

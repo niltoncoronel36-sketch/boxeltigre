@@ -18,6 +18,11 @@ class StoreOrder extends Model
     'customer_email',
     'payment_method',
     'status',
+
+    // ✅ Recomendado (para poder asignarlos si algún día haces update masivo)
+    'stock_applied',
+    'stock_applied_at',
+
     'subtotal',
     'shipping',
     'total',
@@ -29,6 +34,10 @@ class StoreOrder extends Model
     'subtotal' => 'decimal:2',
     'shipping' => 'decimal:2',
     'total' => 'decimal:2',
+
+    // ✅ Importante
+    'stock_applied' => 'boolean',
+    'stock_applied_at' => 'datetime',
   ];
 
   public function items()

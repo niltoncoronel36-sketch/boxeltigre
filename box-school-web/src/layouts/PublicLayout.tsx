@@ -3,6 +3,9 @@ import { Outlet, Link, NavLink, useNavigate } from "react-router-dom";
 import "./public.css";
 import { useAuth } from "../auth/AuthContext";
 
+// ✅ carrito público (usa KEY="public_cart_v1" internamente)
+import { loadCart, cartCount } from "../pages/public/store/cart";
+
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `pub-nav__link ${isActive ? "is-active" : ""}`;
 
@@ -12,6 +15,35 @@ export default function PublicLayout() {
 
   const navigate = useNavigate();
   const { user, loading, isAdmin, isStudent, signOut } = useAuth();
+
+  // ✅ contador carrito (header)
+  const [cartN, setCartN] = useState(0);
+
+  const refreshCart = () => {
+    try {
+      const c = loadCart();
+      setCartN(cartCount(c));
+    } catch {
+      setCartN(0);
+    }
+  };
+
+  useEffect(() => {
+    refreshCart();
+
+    // si cambias el localStorage (otra pestaña)
+    const onStorage = () => refreshCart();
+    window.addEventListener("storage", onStorage);
+
+    // cuando vuelves a la pestaña (útil al agregar desde detalle)
+    const onFocus = () => refreshCart();
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, []);
 
   const displayName = useMemo(() => {
     if (!user) return "";
@@ -56,6 +88,14 @@ export default function PublicLayout() {
     }
   };
 
+  const goCart = () => {
+    setOpen(false);
+    setUserMenuOpen(false);
+
+    // ✅ abre el drawer en StoreFront (por ?cart=1)
+    navigate("/tienda?cart=1");
+  };
+
   return (
     <div className="public-scope">
       <div className="pub-site">
@@ -77,6 +117,11 @@ export default function PublicLayout() {
               <NavLink to="/contacto" className={navLinkClass}>Contacto</NavLink>
 
               <div className="pub-nav__sep" aria-hidden="true" />
+
+              {/* ✅ carrito siempre visible */}
+              <button type="button" className="pub-btn pub-btn--outline" onClick={goCart}>
+                Ver carrito ({cartN})
+              </button>
 
               {!loading && !user && (
                 <>
@@ -108,29 +153,18 @@ export default function PublicLayout() {
                       <span className="pub-user__name">
                         Hola, <b>{displayName}</b>
                       </span>
-                      <span
-                        className={`pub-user__chev ${userMenuOpen ? "is-open" : ""}`}
-                        aria-hidden="true"
-                      >
+                      <span className={`pub-user__chev ${userMenuOpen ? "is-open" : ""}`} aria-hidden="true">
                         ▾
                       </span>
                     </button>
 
                     {userMenuOpen && (
                       <div className="pub-user__menu">
-                        <Link
-                          to={panelPath}
-                          className="pub-user__item"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
+                        <Link to={panelPath} className="pub-user__item" onClick={() => setUserMenuOpen(false)}>
                           Panel
                         </Link>
 
-                        <button
-                          type="button"
-                          className="pub-user__item pub-user__danger"
-                          onClick={handleLogout}
-                        >
+                        <button type="button" className="pub-user__item pub-user__danger" onClick={handleLogout}>
                           Cerrar sesión
                         </button>
                       </div>
@@ -142,6 +176,11 @@ export default function PublicLayout() {
 
             {/* Mobile header */}
             <div className="pub-header__mobile">
+              {/* ✅ carrito en mobile */}
+              <button className="pub-btn pub-btn--outline pub-btn--sm" type="button" onClick={goCart}>
+                Carrito ({cartN})
+              </button>
+
               {!loading && !user && (
                 <NavLink to="/login" className="pub-btn pub-btn--outline pub-btn--sm">
                   Login
@@ -181,6 +220,11 @@ export default function PublicLayout() {
                 Contacto
               </NavLink>
 
+              {/* ✅ carrito dentro del menú mobile */}
+              <button className="pub-btn pub-btn--outline" type="button" onClick={goCart}>
+                Ver carrito ({cartN})
+              </button>
+
               <div className="pub-mobile__cta">
                 {!loading && !user && (
                   <a href="/#unete" className="pub-btn pub-btn--accent" onClick={() => setOpen(false)}>
@@ -216,9 +260,7 @@ export default function PublicLayout() {
               <div className="pub-footer__brand">ACADEMIA BOX</div>
               <div className="pub-footer__muted">Disciplina • Técnica • Progreso</div>
             </div>
-            <div className="pub-footer__muted">
-              © {new Date().getFullYear()}
-            </div>
+            <div className="pub-footer__muted">© {new Date().getFullYear()}</div>
           </div>
         </footer>
       </div>

@@ -1,6 +1,15 @@
-// src/pages/Categories.tsx
 import React, { useEffect, useMemo, useState } from "react";
-import { api } from "../lib/api";
+import { api } from "../services/api"; // ✅ CAMBIO: usar el api con Bearer token
+import {
+  Layers,
+  Users,
+  BadgeDollarSign,
+  Pencil,
+  Trash2,
+  Plus,
+  Search,
+  Filter,
+} from "lucide-react";
 
 type Category = {
   id: number;
@@ -25,7 +34,10 @@ type FormErrors = Record<string, string[]>;
 
 function moneyFromCents(cents?: number | null) {
   const value = (cents ?? 0) / 100;
-  return new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(value);
+  return new Intl.NumberFormat("es-PE", {
+    style: "currency",
+    currency: "PEN",
+  }).format(value);
 }
 
 function centsFromSoles(input: string) {
@@ -39,24 +51,60 @@ function solesFromCents(cents?: number | null) {
   return (Math.round(v * 100) / 100).toFixed(2);
 }
 
+// ✅ Ajustado a tema blanco (y corregido rgba)
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "11px 12px",
   borderRadius: 14,
-  border: "1px solid rgba(255,255,255,.10)",
-  background: "rgba(255,255,255,.04)",
-  color: "rgba(255,255,255,.92)",
+  border: "1px solid rgba(0,0,0,.10)",
+  background: "rgba(255,255,255,.96)",
+  color: "rgba(14,14,14,.82)",
   outline: "none",
+  boxShadow: "0 6px 16px rgba(0,0,0,.06)",
 };
 
 function Field(props: { label: string; error?: string; children: React.ReactNode }) {
   return (
     <div>
-      <div style={{ fontSize: 12, opacity: 0.8 }}>{props.label}</div>
+      <div style={{ fontSize: 12, opacity: 0.75 }}>{props.label}</div>
       <div style={{ marginTop: 6 }}>{props.children}</div>
       {props.error && (
-        <div style={{ marginTop: 6, fontSize: 12, color: "rgba(255,150,150,.95)" }}>{props.error}</div>
+        <div style={{ marginTop: 6, fontSize: 12, color: "rgba(160,0,0,.85)" }}>
+          {props.error}
+        </div>
       )}
+    </div>
+  );
+}
+
+function LevelBadge({ level }: { level?: string | null }) {
+  const label = (level ?? "").trim() || "general";
+  return (
+    <span className="cat-pill" title="Nivel">
+      <Layers size={16} />
+      {label}
+    </span>
+  );
+}
+
+function MetaRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: React.ReactNode;
+}) {
+  return (
+    <div className="cat-meta-row">
+      <div className="cat-meta-ico">
+        <Icon size={18} />
+      </div>
+      <div style={{ lineHeight: 1.15 }}>
+        <div className="cat-meta-label">{label}</div>
+        <div className="cat-meta-value">{value}</div>
+      </div>
     </div>
   );
 }
@@ -213,10 +261,8 @@ export default function CategoriesPage() {
     setItems((prev) => prev.map((x) => (x.id === cat.id ? { ...x, is_active: next } : x)));
 
     try {
-      // ✅ Mejor PATCH para cambios parciales
       await api.patch(`/api/categories/${cat.id}`, { is_active: next });
     } catch (e: any) {
-      // rollback
       setItems((prev) => prev.map((x) => (x.id === cat.id ? { ...x, is_active: !next } : x)));
       setServerError(e?.response?.data?.message ?? "No se pudo cambiar el estado.");
     }
@@ -236,15 +282,25 @@ export default function CategoriesPage() {
 
   return (
     <div className="card">
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
         <div>
-          <h2 style={{ marginTop: 0 }}>Categorías</h2>
-          <div style={{ opacity: 0.8, fontSize: 12 }}>
+          <h2 style={{ marginTop: 0, marginBottom: 6 }}>Categorías</h2>
+          <div style={{ opacity: 0.75, fontSize: 12 }}>
             Total: <b>{total}</b>
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <button className="btn btn-primary" onClick={openCreate} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          <Plus size={18} />
+          Nueva
+        </button>
+      </div>
+
+      {/* Filters */}
+      <div style={{ marginTop: 12, display: "grid", gap: 10, gridTemplateColumns: "2fr 1fr 140px" }}>
+        <div style={{ position: "relative" }}>
+          <Search size={16} style={{ position: "absolute", left: 12, top: 12, opacity: 0.55 }} />
           <input
             value={search}
             onChange={(e) => {
@@ -252,127 +308,123 @@ export default function CategoriesPage() {
               setPage(1);
             }}
             placeholder="Buscar por nombre o nivel..."
-            style={{ ...inputStyle, minWidth: 240 }}
+            style={{ ...inputStyle, paddingLeft: 36 }}
           />
+        </div>
 
+        <div style={{ position: "relative" }}>
+          <Filter size={16} style={{ position: "absolute", left: 12, top: 12, opacity: 0.55 }} />
           <select
             value={active}
             onChange={(e) => {
               setActive(e.target.value as any);
               setPage(1);
             }}
-            style={inputStyle}
+            style={{ ...inputStyle, paddingLeft: 36 }}
           >
             <option value="all">Todas</option>
             <option value="1">Activas</option>
             <option value="0">Inactivas</option>
           </select>
-
-          <button className="btn btn-primary" onClick={openCreate}>
-            + Nueva
-          </button>
         </div>
+
+        <select
+          value={perPage}
+          onChange={(e) => {
+            setPerPage(Number(e.target.value));
+            setPage(1);
+          }}
+          style={inputStyle}
+          title="Items por página"
+        >
+          {[10, 15, 25, 50, 100].map((n) => (
+            <option key={n} value={n}>
+              {n}/pág
+            </option>
+          ))}
+        </select>
       </div>
 
       {serverError && (
-        <div
-          style={{
-            marginTop: 12,
-            padding: 12,
-            borderRadius: 14,
-            border: "1px solid rgba(255,45,45,.30)",
-            background: "rgba(255,45,45,.10)",
-          }}
-        >
+        <div style={{ marginTop: 12, padding: 12, borderRadius: 14, border: "1px solid rgba(255,45,45,.22)", background: "rgba(255,45,45,.08)" }}>
           {serverError}
         </div>
       )}
 
-      <div style={{ marginTop: 14, overflowX: "auto", border: "1px solid rgba(255,255,255,.10)", borderRadius: 18 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-          <thead style={{ background: "rgba(255,255,255,.05)" }}>
-            <tr>
-              {["Nombre", "Nivel", "Edad", "Capacidad", "Mensualidad", "Estado", "Acciones"].map((h) => (
-                <th key={h} style={{ textAlign: "left", padding: "12px 14px", borderBottom: "1px solid rgba(255,255,255,.10)" }}>
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
+      {/* Cards */}
+      <div className="cat-wrap">
+        <div className="cat-grid">
+          {loading ? (
+            <div className="cat-card" style={{ opacity: 0.85 }}>
+              Cargando...
+            </div>
+          ) : items.length === 0 ? (
+            <div className="cat-card" style={{ opacity: 0.85 }}>
+              No hay categorías.
+            </div>
+          ) : (
+            items.map((c) => (
+              <div key={c.id} className="cat-card">
+                <div className="cat-card__top">
+                  <div className="cat-icon" title="Categoría">
+                    <Layers size={20} />
+                  </div>
 
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={7} style={{ padding: 14, opacity: 0.8 }}>
-                  Cargando...
-                </td>
-              </tr>
-            ) : items.length === 0 ? (
-              <tr>
-                <td colSpan={7} style={{ padding: 14, opacity: 0.8 }}>
-                  No hay categorías.
-                </td>
-              </tr>
-            ) : (
-              items.map((c) => (
-                <tr key={c.id} style={{ borderTop: "1px solid rgba(255,255,255,.10)" }}>
-                  <td style={{ padding: "12px 14px" }}>
-                    <div style={{ fontWeight: 800 }}>{c.name}</div>
-                    <div style={{ fontSize: 11, opacity: 0.7 }}>ID: {c.id}</div>
-                  </td>
-                  <td style={{ padding: "12px 14px" }}>{c.level ?? "—"}</td>
-                  <td style={{ padding: "12px 14px" }}>
-                    {c.min_age ?? "—"} - {c.max_age ?? "—"}
-                  </td>
-                  <td style={{ padding: "12px 14px" }}>{c.capacity ?? "—"}</td>
-                  <td style={{ padding: "12px 14px" }}>{moneyFromCents(c.monthly_fee_cents)}</td>
-                  <td style={{ padding: "12px 14px" }}>
-                    <button className="btn" onClick={() => toggleActive(c)} style={{ padding: "8px 10px" }}>
-                      {c.is_active ? "Activa" : "Inactiva"}
-                    </button>
-                  </td>
-                  <td style={{ padding: "12px 14px" }}>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <button className="btn" onClick={() => openEdit(c)} style={{ padding: "8px 10px" }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
+                      <div style={{ minWidth: 0 }}>
+                        <h3 className="cat-title" title={c.name}>
+                          {c.name}
+                        </h3>
+
+                        <div className="cat-subrow">
+                          <LevelBadge level={c.level} />
+                          <span className="cat-id">ID: {c.id}</span>
+                        </div>
+                      </div>
+
+                      {/* ✅ Switch deslizable */}
+                      <label className="switch" title="Activar / desactivar">
+                        <input type="checkbox" checked={!!c.is_active} onChange={() => toggleActive(c)} />
+                        <span className="switch-track">
+                          <span className="switch-thumb" />
+                        </span>
+                        <span className="switch-text">{c.is_active ? "Activa" : "Inactiva"}</span>
+                      </label>
+                    </div>
+
+                    <div className="cat-meta">
+                      <MetaRow icon={Users} label="Edad" value={`${c.min_age ?? "—"} - ${c.max_age ?? "—"}`} />
+                      <MetaRow icon={Users} label="Capacidad" value={c.capacity ?? "—"} />
+                      <MetaRow icon={BadgeDollarSign} label="Mensualidad" value={moneyFromCents(c.monthly_fee_cents)} />
+                    </div>
+
+                    <div className="cat-actions">
+                      <button className="btn btn-sm" onClick={() => openEdit(c)} type="button">
+                        <Pencil size={16} />
                         Editar
                       </button>
-                      <button
-                        className="btn"
-                        onClick={() => remove(c)}
-                        style={{ padding: "8px 10px", borderColor: "rgba(255,45,45,.30)", background: "rgba(255,45,45,.10)" }}
-                      >
+
+                      <button className="btn btn-sm btn-danger" onClick={() => remove(c)} type="button">
+                        <Trash2 size={16} />
                         Eliminar
                       </button>
                     </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
+      {/* Pagination */}
       <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
         <div style={{ fontSize: 12, opacity: 0.8 }}>
           Página <b>{page}</b> de <b>{lastPage}</b>
         </div>
 
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <select
-            value={perPage}
-            onChange={(e) => {
-              setPerPage(Number(e.target.value));
-              setPage(1);
-            }}
-            style={inputStyle}
-          >
-            {[10, 15, 25, 50, 100].map((n) => (
-              <option key={n} value={n}>
-                {n}/pág
-              </option>
-            ))}
-          </select>
-
           <button className="btn" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} style={{ opacity: page <= 1 ? 0.5 : 1 }}>
             ←
           </button>
@@ -382,6 +434,7 @@ export default function CategoriesPage() {
         </div>
       </div>
 
+      {/* Modal */}
       {open && (
         <div
           style={{

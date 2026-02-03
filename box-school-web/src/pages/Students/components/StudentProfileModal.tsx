@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
+import "./StudentProfileModal.css";
+
 import { useNavigate } from "react-router-dom";
 import {
   AlertCircle,
   Ban,
   CheckCircle2,
-  CreditCard,
   Edit3,
   FileText,
   Fingerprint,
@@ -38,12 +39,11 @@ import { moneyPENFromCents } from "../utils/money";
 import { categoryLabel, formatName, getCurrentEnrollment, getMonthlyFeeCents } from "../utils/helpers";
 
 /**
- * ✅ Datos generales de empresa (solo data, sin estilos extra)
- * Edita aquí.
+ * ✅ Datos empresa (solo data)
  */
 const BUSINESS = {
   name: "Club de Box El Tigre",
-  ruc: "", // opcional
+  ruc: "",
   phone: "+51 999 999 999",
   address: "Jr. Ancash 415, Huancayo 12001",
   city: "Huancayo - Perú",
@@ -99,8 +99,7 @@ function pad(n: number, len = 6) {
 }
 
 /**
- * ✅ Tu print actual se mantiene (no te cambio el estilo).
- * Solo sanitizo el <title>.
+ * ✅ Tu print actual se mantiene (no te cambio el estilo)
  */
 function printHtml(title: string, html: string) {
   const w = window.open("", "_blank", "width=860,height=900");
@@ -144,14 +143,6 @@ function printHtml(title: string, html: string) {
   w.document.close();
 }
 
-
-
-
-
-
-
-
-
 function ReceiptModal(props: {
   open: boolean;
   onClose: () => void;
@@ -163,26 +154,10 @@ function ReceiptModal(props: {
   const { open, onClose, receipt, student, enrollment, amountCents } = props;
   if (!open) return null;
 
-  // ✅ DATA EMPRESA (edita a tu gusto)
-  const BUSINESS = {
-    name: "Club de Box El Tigre",
-    ruc: "", // opcional
-    phone: "+51 999 999 999",
-    address: "Jr. Ancash 415, Huancayo 12001",
-    city: "Huancayo - Perú",
-    terms: [
-      "Conserve este comprobante.",
-      "Pagos no reembolsables salvo error de sistema.",
-      "Si requiere factura, solicitar antes del pago.",
-      "La matrícula corresponde al plan/categoría registrada.",
-    ],
-  };
-
   const receiptNo = receipt?.id ? `NV-${pad(receipt.id)}` : `NV-${pad(student.id)}-${Date.now()}`;
   const paidOn = receipt?.paid_on || todayYmd();
   const method = (receipt?.method ?? "cash") as PaymentMethod;
 
-  // ✅ Categoría con fallback
   const categoryName =
     enrollment?.category
       ? categoryLabel(enrollment.category as any)
@@ -192,13 +167,10 @@ function ReceiptModal(props: {
       ? `Categoría #${enrollment.category_id}`
       : "—";
 
-  // ✅ Datos alumno
   const studentFullName = formatName(student);
   const studentDni = (student as any).document_number ?? "—";
 
   function handlePrint() {
-    // Mantén tu impresión actual (si ya la tienes modificada).
-    // Si quieres, aquí también puedes reutilizar el mismo contenido.
     const html = `
       <div class="paper">
         <div class="row">
@@ -225,25 +197,25 @@ function ReceiptModal(props: {
         <div class="grid">
           <div class="box">
             <div class="k">ALUMNO</div>
-            <div class="v">${studentFullName}</div>
-            <div class="muted" style="margin-top:4px;">DNI: ${studentDni}</div>
+            <div class="v">${esc(studentFullName)}</div>
+            <div class="muted" style="margin-top:4px;">DNI: ${esc(studentDni)}</div>
           </div>
 
           <div class="box">
             <div class="k">DETALLE</div>
             <div class="v">Pago inicial (Matrícula)</div>
-            <div class="muted" style="margin-top:4px;">Categoría: ${categoryName}</div>
+            <div class="muted" style="margin-top:4px;">Categoría: ${esc(categoryName)}</div>
           </div>
 
           <div class="box">
             <div class="k">MÉTODO</div>
-            <div class="v">${methodLabel(method)}</div>
-            <div class="muted" style="margin-top:4px;">Fecha: ${paidOn}</div>
+            <div class="v">${esc(methodLabel(method))}</div>
+            <div class="muted" style="margin-top:4px;">Fecha: ${esc(paidOn)}</div>
           </div>
 
           <div class="box">
             <div class="k">TOTAL</div>
-            <div class="v total">${moneyPENFromCents(amountCents)}</div>
+            <div class="v total">${esc(moneyPENFromCents(amountCents))}</div>
             <div class="muted" style="margin-top:4px;">Moneda: PEN</div>
           </div>
         </div>
@@ -256,7 +228,7 @@ function ReceiptModal(props: {
 
         <div class="muted" style="margin-top:10px;">
           <b>Términos y condiciones</b><br/>
-          ${BUSINESS.terms.map((t) => `• ${t}`).join("<br/>")}
+          ${BUSINESS.terms.map((t) => `• ${esc(t)}`).join("<br/>")}
         </div>
       </div>
     `;
@@ -264,86 +236,101 @@ function ReceiptModal(props: {
   }
 
   return (
-    <div style={receiptOverlay} onMouseDown={onClose}>
-      <div style={receiptCard} onMouseDown={(e) => e.stopPropagation()}>
-        {/* Header modal */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ fontWeight: 900, fontSize: 14 }}>Nota de venta — Matrícula</div>
-          <div style={{ marginLeft: "auto" }}>
-            <button style={receiptCloseBtn} onClick={onClose} type="button">
-              <X size={16} />
-            </button>
-          </div>
+    <div
+      className="sp-overlay sp-overlay--receipt"
+      style={{
+        position: "fixed",
+        inset: 0,
+        display: "grid",
+        placeItems: "center",
+        padding: 18,
+        background: "rgba(2,6,23,.65)",
+        backdropFilter: "blur(8px)",
+        zIndex: 80,
+      }}
+      onMouseDown={onClose}
+    >
+      <div
+        className="sp-receipt"
+        style={{
+          width: "min(560px, 96vw)",
+          borderRadius: 18,
+          background: "rgba(255,255,255,.96)",
+          border: "1px solid rgba(0,0,0,.08)",
+          boxShadow: "0 20px 70px rgba(0,0,0,.30)",
+          padding: 14,
+        }}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <div className="sp-receipt__head">
+          <div className="sp-receipt__title">Nota de venta — Matrícula</div>
+          <button className="btn sp-iconBtn" type="button" onClick={onClose} aria-label="Cerrar">
+            <X size={16} />
+          </button>
         </div>
 
-        <div style={receiptBody}>
-          {/* ✅ DATOS EMPRESA (igual que impresión) */}
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ fontWeight: 900, fontSize: 13, color: "#111827" }}>{BUSINESS.name}</div>
-            <div style={{ fontSize: 12, fontWeight: 800, color: "#64748b" }}>{BUSINESS.address}</div>
-            <div style={{ fontSize: 12, fontWeight: 800, color: "#64748b" }}>{BUSINESS.city}</div>
-            <div style={{ fontSize: 12, fontWeight: 800, color: "#64748b" }}>
-              Tel: <b style={{ color: "#111827" }}>{BUSINESS.phone}</b>
+        <div className="sp-receipt__body">
+          <div className="sp-biz">
+            <div className="sp-biz__name">{BUSINESS.name}</div>
+            <div className="sp-biz__line">{BUSINESS.address}</div>
+            <div className="sp-biz__line">{BUSINESS.city}</div>
+            <div className="sp-biz__line">
+              Tel: <b>{BUSINESS.phone}</b>
               {BUSINESS.ruc ? (
                 <>
                   {" "}
-                  • RUC: <b style={{ color: "#111827" }}>{BUSINESS.ruc}</b>
+                  • RUC: <b>{BUSINESS.ruc}</b>
                 </>
               ) : null}
             </div>
           </div>
 
-          {/* Resumen */}
-          <div style={receiptHeaderRow}>
+          <div className="sp-receipt__summary">
             <div>
-              <div style={{ fontWeight: 900, fontSize: 12, color: "#6b7280" }}>N°</div>
-              <div style={{ fontWeight: 900, fontSize: 16 }}>{receiptNo}</div>
-              <div style={{ fontSize: 12, fontWeight: 800, color: "#64748b", marginTop: 4 }}>
-                Emitido: <b style={{ color: "#111827" }}>{paidOn}</b>
+              <div className="sp-k">N°</div>
+              <div className="sp-receipt__no">{receiptNo}</div>
+              <div className="sp-m">
+                Emitido: <b>{paidOn}</b>
               </div>
             </div>
 
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontWeight: 900, fontSize: 12, color: "#6b7280" }}>Total</div>
-              <div style={{ fontWeight: 900, fontSize: 18 }}>{moneyPENFromCents(amountCents)}</div>
+            <div className="sp-receipt__total">
+              <div className="sp-k">Total</div>
+              <div className="sp-receipt__amount">{moneyPENFromCents(amountCents)}</div>
             </div>
           </div>
 
-          {/* Grid detalles */}
-          <div style={receiptGrid}>
-            <div style={receiptBox}>
-              <div style={receiptK}>Alumno</div>
-              <div style={receiptV}>{studentFullName}</div>
-              <div style={receiptM}>DNI: {studentDni}</div>
+          <div className="sp-receipt__grid">
+            <div className="sp-box">
+              <div className="sp-k">Alumno</div>
+              <div className="sp-v">{studentFullName}</div>
+              <div className="sp-m">DNI: {studentDni}</div>
             </div>
 
-            <div style={receiptBox}>
-              <div style={receiptK}>Detalle</div>
-              <div style={receiptV}>Pago inicial (Matrícula)</div>
-              <div style={receiptM}>Categoría: {categoryName}</div>
+            <div className="sp-box">
+              <div className="sp-k">Detalle</div>
+              <div className="sp-v">Pago inicial (Matrícula)</div>
+              <div className="sp-m">Categoría: {categoryName}</div>
             </div>
 
-            <div style={receiptBox}>
-              <div style={receiptK}>Método</div>
-              <div style={receiptV}>{methodLabel(method)}</div>
+            <div className="sp-box">
+              <div className="sp-k">Método</div>
+              <div className="sp-v">{methodLabel(method)}</div>
             </div>
 
-            <div style={receiptBox}>
-              <div style={receiptK}>Fecha</div>
-              <div style={receiptV}>{paidOn}</div>
+            <div className="sp-box">
+              <div className="sp-k">Fecha</div>
+              <div className="sp-v">{paidOn}</div>
             </div>
           </div>
 
-          <div style={receiptFootNote}>
+          <div className="sp-note">
             * Generado por el sistema. Conserva para control interno.
           </div>
 
-          {/* ✅ TÉRMINOS (igual que impresión) */}
-          <div style={{ marginTop: 12 }}>
-            <div style={{ fontWeight: 900, fontSize: 12, color: "#111827", marginBottom: 6 }}>
-              Términos y condiciones
-            </div>
-            <div style={{ display: "grid", gap: 4, fontSize: 12, fontWeight: 800, color: "#475569" }}>
+          <div className="sp-terms">
+            <div className="sp-terms__title">Términos y condiciones</div>
+            <div className="sp-terms__list">
               {BUSINESS.terms.map((t, i) => (
                 <div key={i}>• {t}</div>
               ))}
@@ -351,11 +338,11 @@ function ReceiptModal(props: {
           </div>
         </div>
 
-        <div style={receiptActions}>
-          <button style={receiptBtnPrimary} onClick={handlePrint} type="button">
+        <div className="sp-receipt__actions">
+          <button className="btn btn-primary sp-primary" type="button" onClick={handlePrint}>
             <Printer size={16} /> Imprimir nota de venta
           </button>
-          <button style={receiptBtnSecondary} onClick={onClose} type="button">
+          <button className="btn" type="button" onClick={onClose}>
             Cerrar
           </button>
         </div>
@@ -363,12 +350,6 @@ function ReceiptModal(props: {
     </div>
   );
 }
-
-
-
-
-
-
 
 export function StudentProfileModal(props: {
   open: boolean;
@@ -398,7 +379,6 @@ export function StudentProfileModal(props: {
     setEnrollments(enr.data);
   };
 
-  // ✅ Carga inicial (con cancelación para evitar setState cuando se cierra)
   useEffect(() => {
     if (!open || !student) return;
 
@@ -444,7 +424,6 @@ export function StudentProfileModal(props: {
     return v === true || v === 1 || v === "1";
   }, [student]);
 
-  // ✅ Default local payment state para el enrollment actual (si falta)
   useEffect(() => {
     if (!currentEnrollment) return;
     const id = currentEnrollment.id;
@@ -454,7 +433,6 @@ export function StudentProfileModal(props: {
     });
   }, [currentEnrollment?.id]);
 
-  // ✅ Carga estado real del pago inicial desde backend
   useEffect(() => {
     if (!open || !currentEnrollment) return;
 
@@ -481,7 +459,7 @@ export function StudentProfileModal(props: {
           [id]: charge ? (charge as InitialReceipt) : null,
         }));
       } catch {
-        // backend aún no implementado / o sin registro
+        // si no existe, no rompe
       } finally {
         if (!cancelled) setPaymentLoading(false);
       }
@@ -546,7 +524,6 @@ export function StudentProfileModal(props: {
     const localMethod = initialPayment?.method ?? "cash";
     const localPaidOn = initialPayment?.paid_on ?? todayYmd();
 
-    // optimista
     setPaymentPatch({ paid: true });
 
     try {
@@ -592,128 +569,141 @@ export function StudentProfileModal(props: {
         amountCents={currentFeeCents}
       />
 
-      <div style={overlayStyle} onMouseDown={onClose}>
-        <div style={profileCardStyle} onMouseDown={(e) => e.stopPropagation()}>
-          <div style={premiumBannerStyle}>
-            <button style={closeCircleStyle} onClick={onClose}>
-              <X size={20} color="white" />
+      <div
+        className="sp-overlay"
+        style={{
+          position: "fixed",
+          inset: 0,
+          display: "grid",
+          placeItems: "center",
+          padding: 18,
+          background: "rgba(2,6,23,.65)",
+          backdropFilter: "blur(8px)",
+          zIndex: 50,
+        }}
+        onMouseDown={onClose}
+      >
+        <div
+          className="sp-card"
+          style={{
+            width: "min(1180px, 96vw)",
+            maxHeight: "min(92vh, 980px)",
+            overflow: "auto",
+            borderRadius: 22,
+            background: "rgba(255,255,255,.92)",
+            border: "1px solid rgba(255,255,255,.18)",
+            boxShadow: "0 20px 80px rgba(0,0,0,.35)",
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          {/* Banner */}
+          <div className="sp-banner">
+            <button className="sp-close" type="button" onClick={onClose} aria-label="Cerrar">
+              <X size={20} />
             </button>
 
-            <div style={lightEffectStyle} />
-
-            <div style={headerContentStyle}>
-              <div style={avatarContainerStyle}>
-                <div style={largeAvatarStyle}>{initials}</div>
-                <div style={onlineStatusStyle(isActive)} />
+            <div className="sp-banner__content">
+              <div className="sp-avatarWrap">
+                <div className="sp-avatar">{initials}</div>
+                <span className={`sp-dot ${isActive ? "is-on" : "is-off"}`} />
               </div>
 
-              <div style={bannerInfoStyle}>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <h1 style={nameTitleStyle}>{formatName(student).toUpperCase()}</h1>
-                  {isActive && <ShieldCheck size={26} color="#4ade80" />}
+              <div className="sp-bannerInfo">
+                <div className="sp-nameRow">
+                  <h2 className="sp-name">{formatName(student)}</h2>
+                  {isActive ? <ShieldCheck size={22} /> : null}
                 </div>
 
-                <div style={badgeRowStyle}>
-                  <span style={premiumBadgeStyle}>DNI: {(student as any).document_number ?? "—"}</span>
-                  <span style={statusPillStyle(isActive)}>
+                <div className="sp-badges">
+                  <span className="sp-pill">DNI: {(student as any).document_number ?? "—"}</span>
+                  <span className={`sp-status ${isActive ? "is-active" : "is-inactive"}`}>
                     {isActive ? "• CUENTA ACTIVA" : "• CUENTA INACTIVA"}
                   </span>
                 </div>
               </div>
             </div>
+
+            <div className="sp-stats">
+              <div className="sp-stat">
+                <div className="sp-stat__k">
+                  <Zap size={12} /> ESTADO ACTUAL
+                </div>
+                <div className="sp-stat__v">{isActive ? "Activo" : "Inactivo"}</div>
+              </div>
+
+              <div className="sp-stat">
+                <div className="sp-stat__k">
+                  <Award size={12} /> CATEGORÍA
+                </div>
+                <div className="sp-stat__v">
+                  {currentEnrollment?.category ? categoryLabel(currentEnrollment.category as any) : "Sin Matrícula"}
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div style={dynamicStatsBarStyle}>
-            <div style={statColumnStyle}>
-              <div style={statLabelContainer}>
-                <Zap size={12} /> ESTADO ACTUAL
-              </div>
-              <div style={statValueStyle}>{isActive ? "Activo" : "Inactivo"}</div>
-            </div>
-
-            <div style={statColumnStyle}>
-              <div style={statLabelContainer}>
-                <Award size={12} /> CATEGORÍA
-              </div>
-              <div style={statValueStyle}>
-                {currentEnrollment?.category ? categoryLabel(currentEnrollment.category as any) : "Sin Matrícula"}
-              </div>
-            </div>
-          </div>
-
-          {err && (
-            <div style={errorAlertStyle}>
+          {err ? (
+            <div className="sp-alert">
               <AlertCircle size={16} /> {err}
             </div>
-          )}
+          ) : null}
 
-          <div style={mainContentGrid}>
-            <div style={contentPanel}>
-              <div style={panelHeaderStyle}>
-                <h3 style={sectionTitleStyle}>DATOS DEL ESTUDIANTE</h3>
-                <button style={minimalEditBtn} onClick={() => onEdit(student)}>
-                  <Edit3 size={14} /> EDITAR PERFIL
+          {/* Main grid */}
+          <div className="sp-grid">
+            {/* Left */}
+            <div className="sp-panel">
+              <div className="sp-panelHead">
+                <div className="sp-sectionTitle">Datos del estudiante</div>
+                <button className="btn sp-miniBtn" type="button" onClick={() => onEdit(student)}>
+                  <Edit3 size={14} /> Editar
                 </button>
               </div>
 
-              <div style={infoGridModern}>
+              <div className="sp-infoGrid">
                 <InfoTile icon={<User size={18} />} label="Nombre completo" value={formatName(student)} />
-                <InfoTile
-                  icon={<Fingerprint size={18} />}
-                  label="Documento (DNI)"
-                  value={(student as any).document_number ?? "—"}
-                />
+                <InfoTile icon={<Fingerprint size={18} />} label="Documento (DNI)" value={(student as any).document_number ?? "—"} />
                 <InfoTile
                   icon={<Calendar size={18} />}
-                  label="Fecha de nacimiento"
+                  label="Nacimiento"
                   value={`${(student as any).birthdate ?? "—"} (${calcAge((student as any).birthdate)} años)`}
                 />
-                <InfoTile icon={<Phone size={18} />} label="Teléfono personal" value={(student as any).phone || "No registrado"} />
-                <InfoTile icon={<Mail size={18} />} label="Correo electrónico" value={(student as any).email || "—"} />
+                <InfoTile icon={<Phone size={18} />} label="Teléfono" value={(student as any).phone || "No registrado"} />
+                <InfoTile icon={<Mail size={18} />} label="Email" value={(student as any).email || "—"} />
               </div>
 
-              <h3 style={{ ...sectionTitleStyle, marginTop: "30px", borderLeftColor: "#4ade80" }}>
-                CONTACTO DE EMERGENCIA
-              </h3>
-              <div style={infoGridModern}>
-                <InfoTile
-                  icon={<HeartPulse size={18} />}
-                  label="Nombre de contacto"
-                  value={(student as any).emergency_contact_name || "No asignado"}
-                />
-                <InfoTile
-                  icon={<Phone size={18} />}
-                  label="Teléfono de emergencia"
-                  value={(student as any).emergency_contact_phone || "No asignado"}
-                />
+              <div className="sp-sectionTitle sp-sectionTitle--green">Contacto de emergencia</div>
+
+              <div className="sp-infoGrid">
+                <InfoTile icon={<HeartPulse size={18} />} label="Nombre" value={(student as any).emergency_contact_name || "No asignado"} />
+                <InfoTile icon={<Phone size={18} />} label="Teléfono" value={(student as any).emergency_contact_phone || "No asignado"} />
               </div>
 
-              <div style={actionRowContainer}>
-                <button style={secondaryActionBtn(isActive)} onClick={handleToggleActive} disabled={loading}>
+              <div className="sp-actions">
+                <button className={`btn sp-action ${isActive ? "is-warn" : "is-ok"}`} type="button" onClick={handleToggleActive} disabled={loading}>
                   {isActive ? <Ban size={14} /> : <CheckCircle2 size={14} />}
-                  {isActive ? "SUSPENDER" : "ACTIVAR CUENTA"}
+                  {isActive ? "Suspender" : "Activar"}
                 </button>
 
-                <button style={dangerActionBtn} onClick={handleDeleteStudent} disabled={loading}>
-                  <Trash2 size={14} /> ELIMINAR
+                <button className="btn sp-action is-danger" type="button" onClick={handleDeleteStudent} disabled={loading}>
+                  <Trash2 size={14} /> Eliminar
                 </button>
               </div>
             </div>
 
-            <div style={contentPanel}>
-              <h3 style={sectionTitleStyle}>GESTIÓN FINANCIERA</h3>
+            {/* Right */}
+            <div className="sp-panel">
+              <div className="sp-sectionTitle">Gestión financiera</div>
 
               {currentEnrollment ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
-                  <div style={isPaid ? paymentDoneStyle : paymentPendingStyle}>
-                    <div style={paymentHeader}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <span style={paymentTitle}>PAGO INICIAL (MATRÍCULA)</span>
-
+                <div className="sp-fin">
+                  <div className={`sp-payCard ${isPaid ? "is-paid" : "is-pending"}`}>
+                    <div className="sp-payHead">
+                      <div className="sp-payTitle">
+                        Pago inicial (Matrícula)
                         {isPaid ? (
                           <button
                             type="button"
-                            style={receiptIconBtn}
+                            className="btn sp-iconBtn"
                             title="Ver nota de venta"
                             onClick={() => setReceiptOpen(true)}
                             disabled={!currentReceipt && paymentLoading}
@@ -723,13 +713,13 @@ export function StudentProfileModal(props: {
                         ) : null}
                       </div>
 
-                      <span style={paymentAmount}>{moneyPENFromCents(currentFeeCents)}</span>
+                      <div className="sp-payAmount">{moneyPENFromCents(currentFeeCents)}</div>
                     </div>
 
                     {!isPaid ? (
-                      <div style={paymentActionGroup}>
+                      <div className="sp-payActions">
                         <select
-                          style={modernSelect}
+                          className="input sp-input"
                           value={initialPayment?.method ?? "cash"}
                           onChange={(e) => setPaymentPatch({ method: e.target.value as PaymentMethod })}
                           disabled={paymentLoading}
@@ -742,29 +732,25 @@ export function StudentProfileModal(props: {
                         </select>
 
                         <input
-                          style={modernDateInput}
+                          className="input sp-input"
                           type="date"
                           value={initialPayment?.paid_on ?? todayYmd()}
                           onChange={(e) => setPaymentPatch({ paid_on: e.target.value })}
                           disabled={paymentLoading}
                         />
 
-                        <button style={primaryValidateBtn} disabled={paymentLoading} onClick={commitInitialPayment}>
+                        <button className="btn btn-primary sp-primary" type="button" disabled={paymentLoading} onClick={commitInitialPayment}>
                           <CheckCircle2 size={16} />
-                          {paymentLoading ? "..." : "VALIDAR PAGO"}
+                          {paymentLoading ? "Validando..." : "Validar pago"}
                         </button>
                       </div>
                     ) : (
-                      <div style={{ display: "grid", gap: 10 }}>
-                        <div style={successMessageContainer}>
-                          <CheckCircle2 size={18} /> MATRÍCULA PAGADA
+                      <div className="sp-paid">
+                        <div className="sp-paidOk">
+                          <CheckCircle2 size={18} /> Matrícula pagada
                         </div>
-
-                        <div style={paidNoteStyle}>
-                          ✅ Matrícula pagada y registrada. Puedes ver/imprimir la nota de venta.
-                        </div>
-
-                        <button type="button" style={receiptPrintBtn} onClick={() => setReceiptOpen(true)}>
+                        <div className="sp-paidNote">✅ Matrícula pagada y registrada. Puedes ver / imprimir la nota de venta.</div>
+                        <button type="button" className="btn sp-printBtn" onClick={() => setReceiptOpen(true)}>
                           <Printer size={16} /> Imprimir nota de venta
                         </button>
                       </div>
@@ -783,42 +769,43 @@ export function StudentProfileModal(props: {
 
                   <button
                     type="button"
+                    className="sp-sheetBtn"
                     onClick={() => {
                       onClose();
                       navigate(`/students/${student.id}/enrollment-sheet`);
                     }}
-                    style={printActionBtn}
                   >
-                    <div style={printIconWrapper}>
+                    <div className="sp-sheetIcon">
                       <FileText size={20} />
                     </div>
-                    <div style={{ textAlign: "left" }}>
-                      <div style={{ fontSize: "14px", fontWeight: 900 }}>IMPRIMIR FICHA</div>
-                      <div style={{ fontSize: "10px", opacity: 0.7 }}>EXPEDIENTE #00{student.id}</div>
+                    <div className="sp-sheetText">
+                      <div className="sp-sheetTitle">Imprimir ficha</div>
+                      <div className="sp-sheetSub">Expediente #00{student.id}</div>
                     </div>
-                    <Printer size={18} style={{ marginLeft: "auto", opacity: 0.5 }} />
+                    <Printer size={18} className="sp-sheetArrow" />
                   </button>
                 </div>
               ) : (
-                <div style={emptyStateContainer}>
-                  <GraduationCap size={48} color="#e5e7eb" />
-                  <p style={{ fontWeight: 700, color: "#9ca3af" }}>Sin Matrícula Activa</p>
-                  <button style={createBtnStyle} onClick={() => setManageOpen(true)}>
-                    MATRICULAR AHORA
+                <div className="sp-empty">
+                  <GraduationCap size={44} />
+                  <div className="sp-emptyTitle">Sin matrícula activa</div>
+                  <button className="btn btn-primary sp-primary" type="button" onClick={() => setManageOpen(true)}>
+                    Matricular ahora
                   </button>
                 </div>
               )}
             </div>
           </div>
 
-          <div style={footerArea}>
-            <button style={footerToggleBtn(manageOpen)} onClick={() => setManageOpen(!manageOpen)}>
+          {/* Footer / History */}
+          <div className="sp-footer">
+            <button className="sp-toggle" type="button" onClick={() => setManageOpen(!manageOpen)}>
               {manageOpen ? <X size={16} /> : <Settings size={16} />}
-              <span>{manageOpen ? "CERRAR HISTORIAL" : "HISTORIAL DE MATRÍCULAS"}</span>
+              <span>{manageOpen ? "Cerrar historial" : "Historial de matrículas"}</span>
             </button>
 
-            {manageOpen && (
-              <div style={collapsibleWrapper}>
+            {manageOpen ? (
+              <div className="sp-collapse">
                 <EnrollmentManager
                   studentId={student.id}
                   categories={categories}
@@ -829,7 +816,7 @@ export function StudentProfileModal(props: {
                   onRefresh={refreshEnrollments}
                 />
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
@@ -837,683 +824,14 @@ export function StudentProfileModal(props: {
   );
 }
 
-// Sub-componentes
 function InfoTile({ icon, label, value }: any) {
   return (
-    <div style={infoTileStyle}>
-      <div style={tileIconBox}>{icon}</div>
-      <div>
-        <div style={tileLabel}>{label}</div>
-        <div style={tileValue}>{value}</div>
+    <div className="sp-tile">
+      <div className="sp-tileIcon">{icon}</div>
+      <div className="sp-tileBody">
+        <div className="sp-tileLabel">{label}</div>
+        <div className="sp-tileValue">{value}</div>
       </div>
     </div>
   );
 }
-
-
-
-
-// =========================
-// ✅ ESTILOS (inline styles)
-// Pega esto al final de tu archivo (o donde guardas estilos)
-// =========================
-
-const overlayStyle: React.CSSProperties = {
-  position: "fixed",
-  inset: 0,
-  background: "rgba(2, 6, 23, .65)",
-  backdropFilter: "blur(8px)",
-  WebkitBackdropFilter: "blur(8px)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 18,
-  zIndex: 50,
-};
-
-const profileCardStyle: React.CSSProperties = {
-  width: "min(1180px, 96vw)",
-  maxHeight: "min(92vh, 980px)",
-  overflow: "auto",
-  borderRadius: 22,
-  background: "rgba(255,255,255,.92)",
-  border: "1px solid rgba(255,255,255,.18)",
-  boxShadow: "0 20px 80px rgba(0,0,0,.35)",
-};
-
-const premiumBannerStyle: React.CSSProperties = {
-  position: "relative",
-  padding: "26px 26px 18px",
-  borderTopLeftRadius: 22,
-  borderTopRightRadius: 22,
-  background:
-    "radial-gradient(1200px 300px at 0% 0%, rgba(255,122,24,.35), transparent 60%), radial-gradient(900px 280px at 100% 0%, rgba(59,130,246,.25), transparent 65%), linear-gradient(180deg, rgba(15,23,42,.98), rgba(2,6,23,.92))",
-  color: "#fff",
-  overflow: "hidden",
-};
-
-const lightEffectStyle: React.CSSProperties = {
-  position: "absolute",
-  inset: 0,
-  background:
-    "radial-gradient(900px 260px at 20% 0%, rgba(255,255,255,.14), transparent 60%), radial-gradient(800px 260px at 80% 10%, rgba(255,255,255,.10), transparent 60%)",
-  pointerEvents: "none",
-};
-
-const closeCircleStyle: React.CSSProperties = {
-  position: "absolute",
-  top: 14,
-  right: 14,
-  width: 42,
-  height: 42,
-  borderRadius: 999,
-  border: "1px solid rgba(255,255,255,.22)",
-  background: "rgba(255,255,255,.08)",
-  display: "grid",
-  placeItems: "center",
-  cursor: "pointer",
-};
-
-const headerContentStyle: React.CSSProperties = {
-  position: "relative",
-  display: "flex",
-  alignItems: "center",
-  gap: 16,
-};
-
-const avatarContainerStyle: React.CSSProperties = {
-  position: "relative",
-  width: 64,
-  height: 64,
-  flex: "0 0 auto",
-};
-
-const largeAvatarStyle: React.CSSProperties = {
-  width: 64,
-  height: 64,
-  borderRadius: 18,
-  display: "grid",
-  placeItems: "center",
-  fontWeight: 900,
-  letterSpacing: 0.6,
-  fontSize: 18,
-  background:
-    "linear-gradient(135deg, rgba(255,122,24,.95), rgba(255,190,64,.75))",
-  color: "#111827",
-  boxShadow: "0 16px 40px rgba(0,0,0,.35)",
-  border: "1px solid rgba(255,255,255,.22)",
-};
-
-const onlineStatusStyle = (active: boolean): React.CSSProperties => ({
-  position: "absolute",
-  right: -2,
-  bottom: -2,
-  width: 16,
-  height: 16,
-  borderRadius: 999,
-  background: active ? "#4ade80" : "#f97316",
-  border: "3px solid rgba(2,6,23,.92)",
-  boxShadow: "0 8px 20px rgba(0,0,0,.35)",
-});
-
-const bannerInfoStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 10,
-  minWidth: 0,
-};
-
-const nameTitleStyle: React.CSSProperties = {
-  margin: 0,
-  fontSize: 18,
-  fontWeight: 900,
-  letterSpacing: 1.2,
-  lineHeight: 1.1,
-  maxWidth: "min(820px, 70vw)",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
-};
-
-const badgeRowStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 10,
-  flexWrap: "wrap",
-  alignItems: "center",
-};
-
-const premiumBadgeStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "8px 12px",
-  borderRadius: 999,
-  fontSize: 12,
-  fontWeight: 900,
-  background: "rgba(255,255,255,.10)",
-  border: "1px solid rgba(255,255,255,.18)",
-};
-
-const statusPillStyle = (active: boolean): React.CSSProperties => ({
-  display: "inline-flex",
-  alignItems: "center",
-  padding: "8px 12px",
-  borderRadius: 999,
-  fontSize: 12,
-  fontWeight: 900,
-  background: active ? "rgba(74,222,128,.14)" : "rgba(251,113,133,.14)",
-  border: `1px solid ${active ? "rgba(74,222,128,.28)" : "rgba(251,113,133,.28)"}`,
-  color: "rgba(255,255,255,.92)",
-});
-
-const dynamicStatsBarStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 12,
-  padding: "14px 18px",
-  background: "rgba(255,255,255,.85)",
-  borderBottom: "1px solid rgba(0,0,0,.06)",
-};
-
-const statColumnStyle: React.CSSProperties = {
-  borderRadius: 16,
-  padding: "12px 14px",
-  border: "1px solid rgba(0,0,0,.06)",
-  background:
-    "linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.70))",
-  boxShadow: "0 10px 30px rgba(0,0,0,.06)",
-};
-
-const statLabelContainer: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  fontSize: 11,
-  fontWeight: 900,
-  color: "rgba(2,6,23,.60)",
-  letterSpacing: 0.5,
-};
-
-const statValueStyle: React.CSSProperties = {
-  marginTop: 6,
-  fontSize: 13,
-  fontWeight: 900,
-  color: "rgba(2,6,23,.88)",
-};
-
-const errorAlertStyle: React.CSSProperties = {
-  margin: "14px 18px 0",
-  padding: "12px 14px",
-  borderRadius: 14,
-  border: "1px solid rgba(248,113,113,.35)",
-  background: "rgba(248,113,113,.10)",
-  color: "rgba(127,29,29,.92)",
-  display: "flex",
-  gap: 10,
-  alignItems: "center",
-  fontWeight: 800,
-  fontSize: 12,
-};
-
-const mainContentGrid: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1.05fr .95fr",
-  gap: 16,
-  padding: 18,
-};
-
-const contentPanel: React.CSSProperties = {
-  borderRadius: 18,
-  border: "1px solid rgba(0,0,0,.06)",
-  background: "rgba(255,255,255,.86)",
-  boxShadow: "0 14px 40px rgba(0,0,0,.06)",
-  padding: 16,
-};
-
-const panelHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 12,
-  marginBottom: 12,
-};
-
-const sectionTitleStyle: React.CSSProperties = {
-  margin: 0,
-  fontSize: 12,
-  fontWeight: 900,
-  letterSpacing: 0.8,
-  color: "rgba(2,6,23,.78)",
-  borderLeft: "4px solid rgba(255,122,24,.85)",
-  paddingLeft: 10,
-};
-
-const minimalEditBtn: React.CSSProperties = {
-  marginLeft: "auto",
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "10px 12px",
-  borderRadius: 14,
-  border: "1px solid rgba(0,0,0,.08)",
-  background: "rgba(2,6,23,.04)",
-  fontSize: 12,
-  fontWeight: 900,
-  color: "rgba(2,6,23,.78)",
-  cursor: "pointer",
-};
-
-const infoGridModern: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 12,
-};
-
-const infoTileStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 12,
-  padding: 12,
-  borderRadius: 16,
-  border: "1px solid rgba(0,0,0,.06)",
-  background: "rgba(255,255,255,.78)",
-};
-
-const tileIconBox: React.CSSProperties = {
-  width: 40,
-  height: 40,
-  borderRadius: 14,
-  display: "grid",
-  placeItems: "center",
-  background: "rgba(255,122,24,.10)",
-  border: "1px solid rgba(255,122,24,.18)",
-  color: "rgba(2,6,23,.80)",
-  flex: "0 0 auto",
-};
-
-const tileLabel: React.CSSProperties = {
-  fontSize: 11,
-  fontWeight: 900,
-  color: "rgba(2,6,23,.55)",
-  letterSpacing: 0.4,
-};
-
-const tileValue: React.CSSProperties = {
-  marginTop: 3,
-  fontSize: 13,
-  fontWeight: 900,
-  color: "rgba(2,6,23,.88)",
-  wordBreak: "break-word",
-};
-
-const actionRowContainer: React.CSSProperties = {
-  marginTop: 14,
-  display: "flex",
-  gap: 10,
-  flexWrap: "wrap",
-};
-
-const secondaryActionBtn = (active: boolean): React.CSSProperties => ({
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "12px 14px",
-  borderRadius: 14,
-  border: "1px solid rgba(0,0,0,.08)",
-  background: active ? "rgba(251,113,133,.10)" : "rgba(74,222,128,.10)",
-  color: "rgba(2,6,23,.86)",
-  fontSize: 12,
-  fontWeight: 900,
-  cursor: "pointer",
-});
-
-const dangerActionBtn: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "12px 14px",
-  borderRadius: 14,
-  border: "1px solid rgba(248,113,113,.22)",
-  background: "rgba(248,113,113,.10)",
-  color: "rgba(127,29,29,.92)",
-  fontSize: 12,
-  fontWeight: 900,
-  cursor: "pointer",
-};
-
-const paymentPendingStyle: React.CSSProperties = {
-  borderRadius: 18,
-  border: "1px solid rgba(255,122,24,.22)",
-  background: "linear-gradient(180deg, rgba(255,122,24,.10), rgba(255,255,255,.80))",
-  padding: 14,
-};
-
-const paymentDoneStyle: React.CSSProperties = {
-  borderRadius: 18,
-  border: "1px solid rgba(74,222,128,.24)",
-  background: "linear-gradient(180deg, rgba(74,222,128,.10), rgba(255,255,255,.80))",
-  padding: 14,
-};
-
-const paymentHeader: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 12,
-};
-
-const paymentTitle: React.CSSProperties = {
-  fontSize: 12,
-  fontWeight: 900,
-  letterSpacing: 0.6,
-  color: "rgba(2,6,23,.75)",
-};
-
-const paymentAmount: React.CSSProperties = {
-  fontSize: 14,
-  fontWeight: 900,
-  color: "rgba(2,6,23,.88)",
-};
-
-const paymentActionGroup: React.CSSProperties = {
-  marginTop: 12,
-  display: "flex",
-  gap: 10,
-  flexWrap: "wrap",
-  alignItems: "center",
-};
-
-const modernSelect: React.CSSProperties = {
-  padding: "11px 12px",
-  borderRadius: 14,
-  border: "1px solid rgba(0,0,0,.10)",
-  background: "rgba(255,255,255,.92)",
-  fontWeight: 900,
-  fontSize: 12,
-  color: "rgba(2,6,23,.86)",
-  outline: "none",
-};
-
-const modernDateInput: React.CSSProperties = {
-  padding: "11px 12px",
-  borderRadius: 14,
-  border: "1px solid rgba(0,0,0,.10)",
-  background: "rgba(255,255,255,.92)",
-  fontWeight: 900,
-  fontSize: 12,
-  color: "rgba(2,6,23,.86)",
-  outline: "none",
-};
-
-const primaryValidateBtn: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "12px 14px",
-  borderRadius: 14,
-  border: "1px solid rgba(255,122,24,.25)",
-  background: "linear-gradient(135deg, rgba(255,122,24,1), rgba(255,190,64,.95))",
-  color: "#111827",
-  fontWeight: 900,
-  fontSize: 12,
-  cursor: "pointer",
-  boxShadow: "0 16px 40px rgba(255,122,24,.20)",
-};
-
-const successMessageContainer: React.CSSProperties = {
-  padding: "12px 14px",
-  borderRadius: 14,
-  border: "1px solid rgba(74,222,128,.24)",
-  background: "rgba(74,222,128,.10)",
-  color: "rgba(2,6,23,.86)",
-  display: "flex",
-  gap: 10,
-  alignItems: "center",
-  fontWeight: 900,
-};
-
-const paidNoteStyle: React.CSSProperties = {
-  padding: "10px 12px",
-  borderRadius: 14,
-  border: "1px dashed rgba(0,0,0,.12)",
-  background: "rgba(2,6,23,.02)",
-  color: "rgba(2,6,23,.72)",
-  fontSize: 12,
-  fontWeight: 800,
-};
-
-const receiptPrintBtn: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 8,
-  padding: "12px 14px",
-  borderRadius: 14,
-  border: "1px solid rgba(0,0,0,.10)",
-  background: "rgba(255,255,255,.92)",
-  color: "rgba(2,6,23,.86)",
-  fontWeight: 900,
-  cursor: "pointer",
-};
-
-const receiptIconBtn: React.CSSProperties = {
-  width: 34,
-  height: 34,
-  borderRadius: 12,
-  display: "grid",
-  placeItems: "center",
-  border: "1px solid rgba(0,0,0,.10)",
-  background: "rgba(255,255,255,.88)",
-  cursor: "pointer",
-};
-
-const printActionBtn: React.CSSProperties = {
-  width: "100%",
-  display: "flex",
-  alignItems: "center",
-  gap: 12,
-  padding: "14px 14px",
-  borderRadius: 18,
-  border: "1px solid rgba(0,0,0,.06)",
-  background:
-    "linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.78))",
-  boxShadow: "0 14px 40px rgba(0,0,0,.06)",
-  cursor: "pointer",
-};
-
-const printIconWrapper: React.CSSProperties = {
-  width: 46,
-  height: 46,
-  borderRadius: 16,
-  display: "grid",
-  placeItems: "center",
-  background: "rgba(59,130,246,.10)",
-  border: "1px solid rgba(59,130,246,.18)",
-  color: "rgba(2,6,23,.86)",
-  flex: "0 0 auto",
-};
-
-const emptyStateContainer: React.CSSProperties = {
-  borderRadius: 18,
-  border: "1px dashed rgba(0,0,0,.12)",
-  background: "rgba(2,6,23,.02)",
-  padding: 18,
-  display: "grid",
-  placeItems: "center",
-  gap: 10,
-};
-
-const createBtnStyle: React.CSSProperties = {
-  marginTop: 6,
-  padding: "12px 14px",
-  borderRadius: 14,
-  border: "1px solid rgba(255,122,24,.25)",
-  background: "linear-gradient(135deg, rgba(255,122,24,1), rgba(255,190,64,.95))",
-  color: "#111827",
-  fontWeight: 900,
-  fontSize: 12,
-  cursor: "pointer",
-};
-
-const footerArea: React.CSSProperties = {
-  padding: "0 18px 18px",
-};
-
-const footerToggleBtn = (open: boolean): React.CSSProperties => ({
-  width: "100%",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 10,
-  padding: "12px 14px",
-  borderRadius: 18,
-  border: "1px solid rgba(0,0,0,.08)",
-  background: open ? "rgba(255,122,24,.10)" : "rgba(2,6,23,.04)",
-  color: "rgba(2,6,23,.86)",
-  fontWeight: 900,
-  cursor: "pointer",
-});
-
-const collapsibleWrapper: React.CSSProperties = {
-  marginTop: 12,
-  borderRadius: 18,
-  border: "1px solid rgba(0,0,0,.06)",
-  background: "rgba(255,255,255,.86)",
-  padding: 12,
-  boxShadow: "0 14px 40px rgba(0,0,0,.06)",
-};
-
-// =========================
-// ✅ ReceiptModal styles
-// =========================
-const receiptOverlay: React.CSSProperties = {
-  position: "fixed",
-  inset: 0,
-  background: "rgba(2, 6, 23, .65)",
-  backdropFilter: "blur(8px)",
-  WebkitBackdropFilter: "blur(8px)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 18,
-  zIndex: 80,
-};
-
-const receiptCard: React.CSSProperties = {
-  width: "min(560px, 96vw)",
-  borderRadius: 18,
-  background: "rgba(255,255,255,.95)",
-  border: "1px solid rgba(0,0,0,.08)",
-  boxShadow: "0 20px 70px rgba(0,0,0,.30)",
-  padding: 14,
-};
-
-const receiptCloseBtn: React.CSSProperties = {
-  width: 34,
-  height: 34,
-  borderRadius: 12,
-  border: "1px solid rgba(0,0,0,.10)",
-  background: "rgba(2,6,23,.04)",
-  display: "grid",
-  placeItems: "center",
-  cursor: "pointer",
-};
-
-const receiptBody: React.CSSProperties = {
-  marginTop: 12,
-  borderRadius: 16,
-  border: "1px solid rgba(0,0,0,.06)",
-  background: "rgba(255,255,255,.86)",
-  padding: 12,
-};
-
-const receiptHeaderRow: React.CSSProperties = {
-  display: "flex",
-  alignItems: "flex-start",
-  justifyContent: "space-between",
-  gap: 12,
-  paddingBottom: 10,
-  borderBottom: "1px dashed rgba(0,0,0,.12)",
-};
-
-const receiptGrid: React.CSSProperties = {
-  marginTop: 12,
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 10,
-};
-
-const receiptBox: React.CSSProperties = {
-  borderRadius: 14,
-  border: "1px solid rgba(0,0,0,.06)",
-  background: "rgba(255,255,255,.86)",
-  padding: 10,
-};
-
-const receiptK: React.CSSProperties = {
-  fontSize: 11,
-  fontWeight: 900,
-  letterSpacing: 0.6,
-  color: "rgba(2,6,23,.55)",
-  textTransform: "uppercase",
-};
-
-const receiptV: React.CSSProperties = {
-  marginTop: 5,
-  fontSize: 13,
-  fontWeight: 900,
-  color: "rgba(2,6,23,.88)",
-};
-
-const receiptM: React.CSSProperties = {
-  marginTop: 4,
-  fontSize: 12,
-  fontWeight: 800,
-  color: "rgba(2,6,23,.60)",
-};
-
-const receiptFootNote: React.CSSProperties = {
-  marginTop: 12,
-  padding: "10px 12px",
-  borderRadius: 14,
-  border: "1px dashed rgba(0,0,0,.12)",
-  background: "rgba(2,6,23,.02)",
-  fontSize: 12,
-  fontWeight: 800,
-  color: "rgba(2,6,23,.72)",
-};
-
-const receiptActions: React.CSSProperties = {
-  marginTop: 12,
-  display: "flex",
-  gap: 10,
-  justifyContent: "flex-end",
-  flexWrap: "wrap",
-};
-
-const receiptBtnPrimary: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "12px 14px",
-  borderRadius: 14,
-  border: "1px solid rgba(255,122,24,.25)",
-  background: "linear-gradient(135deg, rgba(255,122,24,1), rgba(255,190,64,.95))",
-  color: "#111827",
-  fontWeight: 900,
-  fontSize: 12,
-  cursor: "pointer",
-  boxShadow: "0 16px 40px rgba(255,122,24,.20)",
-};
-
-const receiptBtnSecondary: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "12px 14px",
-  borderRadius: 14,
-  border: "1px solid rgba(0,0,0,.10)",
-  background: "rgba(255,255,255,.92)",
-  color: "rgba(2,6,23,.86)",
-  fontWeight: 900,
-  fontSize: 12,
-  cursor: "pointer",
-};

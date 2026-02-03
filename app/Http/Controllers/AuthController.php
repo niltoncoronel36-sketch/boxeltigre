@@ -2,34 +2,51 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
     /**
-     * SPA login (cookie session). Use with Sanctum CSRF cookie first.
+     * ✅ API login (Bearer token con Sanctum) - SIN sesiones
+     * POST /api/auth/login
+     * Body: { email: "dni o email", password: "..." }
      */
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'string'],   // ✅ DNI o email
+        $data = $request->validate([
+            'email' => ['required', 'string'],   // ✅ DNI o email (tu frontend manda "email")
             'password' => ['required', 'string'],
         ]);
 
-        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+        $login = trim((string) $data['email']);
+        $password = (string) $data['password'];
+
+        // 🔁 Ajusta aquí según tus columnas reales:
+        // - Si tienes columna "dni", déjalo
+        // - Si NO tienes "dni", elimina ese orWhere
+        $user = User::query()
+            ->where('email', $login)
+            ->orWhere('dni', $login)
+            ->first();
+
+        if (!$user || !Hash::check($password, (string) $user->password)) {
+            // Respuesta tipo validation (como tu versión anterior)
             throw ValidationException::withMessages([
                 'email' => ['Credenciales inválidas.'],
             ]);
         }
 
-        $request->session()->regenerate();
+        // ✅ Opcional: borrar tokens anteriores del usuario (para 1 sesión activa)
+        // $user->tokens()->delete();
 
-        $user = $request->user();
+        // ✅ Crear token Sanctum (requiere HasApiTokens en User)
+        $token = $user->createToken('web')->plainTextToken;
 
-        // ✅ roles desde role_user + roles
+        // ✅ Roles desde role_user + roles
         $roles = DB::table('role_user')
             ->join('roles', 'roles.id', '=', 'role_user.role_id')
             ->where('role_user.user_id', $user->id)
@@ -37,11 +54,19 @@ class AuthController extends Controller
             ->get();
 
         return response()->json([
-            'user' => $user,
-            'roles' => $roles, // ✅ importante para frontend
+            'success' => true,
+            'message' => 'Login OK',
+            'data' => [
+                'token' => $token,
+                'user' => $user,
+                'roles' => $roles,
+            ],
         ]);
     }
 
+    /**
+     * ✅ /api/auth/me (auth:sanctum)
+     */
     public function me(Request $request)
     {
         $user = $request->user();
@@ -51,25 +76,37 @@ class AuthController extends Controller
         }
 
         $roles = DB::table('role_user')
-        ->join('roles', 'roles.id', '=', 'role_user.role_id')
-        ->where('role_user.user_id', $user->id)
-        ->select('roles.id', 'roles.key', 'roles.name')
-        ->get();
-
+            ->join('roles', 'roles.id', '=', 'role_user.role_id')
+            ->where('role_user.user_id', $user->id)
+            ->select('roles.id', 'roles.key', 'roles.name')
+            ->get();
 
         return response()->json([
-            'user' => $user,
-            'roles' => $roles,
+            'success' => true,
+            'message' => 'Me',
+            'data' => [
+                'user' => $user,
+                'roles' => $roles,
+            ],
         ]);
     }
 
+    /**
+     * ✅ /api/auth/logout (auth:sanctum)
+     * Borra el token actual
+     */
     public function logout(Request $request)
     {
-        Auth::logout();
+        $user = $request->user();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        if ($user) {
+            $user->currentAccessToken()?->delete();
+        }
 
-        return response()->json(['ok' => true]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Logout OK',
+            'data' => null,
+        ]);
     }
 }

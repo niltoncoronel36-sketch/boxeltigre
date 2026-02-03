@@ -20,7 +20,7 @@ export default function PublicContact() {
     "https://www.google.com/maps?output=embed&q=Club%20de%20Box%20El%20Tigre%20Huancayo";
 
   // ✅ Reemplaza con tu número (formato internacional). Ej Perú: 51 + 9xxxxxxxx
-  const WHATSAPP_NUMBER = "51999999999";
+  const WHATSAPP_NUMBER = "51947637782";
 
   const categories = useMemo(
     () => [
@@ -238,7 +238,7 @@ export default function PublicContact() {
                   className="pub-input"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Ej: 999 999 999"
+                  placeholder="Ej: 947 637 782"
                   inputMode="tel"
                 />
               </label>
