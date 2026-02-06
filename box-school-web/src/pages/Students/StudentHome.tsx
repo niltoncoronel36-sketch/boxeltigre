@@ -1,3 +1,4 @@
+import "./StudentHome.css";
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
@@ -11,6 +12,8 @@ import {
   Flame,
   MessageCircle,
   Store,
+  User2,
+  ShieldCheck,
 } from "lucide-react";
 
 function fmtDateLima(d: Date) {
@@ -22,17 +25,49 @@ function fmtDateLima(d: Date) {
   });
 }
 
-function TitleRow({
+function pickStr(...vals: any[]) {
+  for (const v of vals) {
+    const s = String(v ?? "").trim();
+    if (s) return s;
+  }
+  return "";
+}
+
+function TitleRow({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) {
+  return (
+    <div className="stu-titleRow">
+      <span className="stu-titleIcon" aria-hidden="true">
+        <Icon size={18} />
+      </span>
+      <div className="title">{children}</div>
+    </div>
+  );
+}
+
+function ActionButton({
+  to,
+  variant = "soft",
   icon: Icon,
-  children,
+  label,
 }: {
+  to: string;
+  variant?: "primary" | "soft";
   icon: React.ElementType;
-  children: React.ReactNode;
+  label: string;
 }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <Link className={`stu-action ${variant}`} to={to}>
       <Icon size={18} />
-      <div className="title">{children}</div>
+      <span>{label}</span>
+    </Link>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="stu-stat">
+      <div className="stu-statLabel">{label}</div>
+      <div className="stu-statValue">{value}</div>
     </div>
   );
 }
@@ -42,129 +77,126 @@ export default function StudentHome() {
 
   const displayName = useMemo(() => {
     if (!user) return "Alumno";
-    return (
-      (user as any)?.name ||
-      (user as any)?.nombre ||
-      (user as any)?.full_name ||
-      (user as any)?.email ||
-      "Alumno"
-    );
+    return pickStr((user as any)?.name, (user as any)?.nombre, (user as any)?.full_name, (user as any)?.email) || "Alumno";
   }, [user]);
 
+  const email = useMemo(() => pickStr((user as any)?.email), [user]);
+  const role = useMemo(() => pickStr((user as any)?.role_name, (user as any)?.role, "Alumno"), [user]);
   const today = useMemo(() => fmtDateLima(new Date()), []);
 
+  // ✅ placeholders (luego los conectamos al API)
+  const enrollmentLabel = "—";     // ej: “Boxeo (Intermedio)”
+  const nextClass = "—";           // ej: “Mar 18:00”
+  const nextPayment = "—";         // ej: “S/ 120 • 05/03/2026”
+  const status = "ACTIVO";         // ej: ACTIVO/INACTIVO/PAUSADO
+
   return (
-    <div className="grid" style={{ gap: 14 }}>
-      {/* Header */}
-      <div className="card">
-        <div className="title" style={{ fontSize: 18 }}>
-          Hola, {displayName} 👋
+    <div className="stu-home">
+      {/* HERO */}
+      <div className="stu-hero card">
+        <div className="stu-heroTop">
+          <div className="stu-avatar" aria-hidden="true">
+            {displayName.charAt(0).toUpperCase()}
+          </div>
+
+          <div className="stu-heroInfo">
+            <div className="stu-hello">
+              Hola, <span className="stu-name">{displayName}</span> 👋
+            </div>
+            <div className="stu-sub">
+              {today}. Bienvenido a tu panel. Aquí verás tus clases, progreso y pagos.
+            </div>
+
+            <div className="stu-badges">
+              <span className="stu-badge">
+                <ShieldCheck size={14} /> {role.toUpperCase()}
+              </span>
+              <span className={`stu-badge ${status === "ACTIVO" ? "ok" : "warn"}`}>
+                <span className="stu-dot" /> {status}
+              </span>
+            </div>
+          </div>
+
+          <div className="stu-heroRight">
+            <div className="stu-miniCard">
+              <div className="stu-miniTitle">
+                <User2 size={16} /> Mi Perfil
+              </div>
+              <div className="stu-miniText">
+                {email ? <>Correo: <b>{email}</b></> : "Completa tus datos para una mejor atención."}
+              </div>
+              <Link className="stu-miniBtn" to="/student/profile">
+                Ver / Editar perfil
+              </Link>
+            </div>
+          </div>
         </div>
-        <div className="muted" style={{ marginTop: 6 }}>
-          {today}. Bienvenido a tu panel. Aquí verás tus clases, progreso y pagos.
+
+        {/* Quick stats */}
+        <div className="stu-stats">
+          <MiniStat label="Matrícula" value={enrollmentLabel} />
+          <MiniStat label="Próxima clase" value={nextClass} />
+          <MiniStat label="Próxima cuota" value={nextPayment} />
         </div>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
-          <Link className="btn btn-primary" to="/student/classes">
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-              <GraduationCap size={18} />
-              Ver mis clases
-            </span>
-          </Link>
-
-          <Link className="btn" to="/student/progress">
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-              <BarChart3 size={18} />
-              Ver progreso
-            </span>
-          </Link>
-
-          <Link className="btn" to="/student/payments">
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-              <Receipt size={18} />
-              Ver pagos
-            </span>
-          </Link>
+        {/* Actions */}
+        <div className="stu-actions">
+          <ActionButton to="/student/classes" variant="primary" icon={GraduationCap} label="Ver mis clases" />
+          <ActionButton to="/student/progress" icon={BarChart3} label="Ver progreso" />
+          <ActionButton to="/student/payments" icon={Receipt} label="Ver pagos" />
         </div>
       </div>
 
       {/* Cards */}
-      <div
-        className="grid"
-        style={{
-          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-          gap: 12,
-        }}
-      >
-        <div className="card">
+      <div className="stu-grid">
+        <div className="card stu-card">
           <TitleRow icon={CalendarClock}>Próxima clase</TitleRow>
-          <div className="muted" style={{ marginTop: 6 }}>
-            Aquí mostraremos tu próxima clase (si luego conectamos el calendario / asistencias).
+          <div className="muted stu-text">
+            Aquí mostraremos tu próxima clase (cuando conectemos calendario/asistencias).
           </div>
-          <div style={{ marginTop: 12 }}>
-            <Link className="btn" to="/student/classes">
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                <CalendarClock size={18} />
-                Ver calendario
-              </span>
-            </Link>
-          </div>
+          <Link className="stu-linkBtn" to="/student/classes">
+            <CalendarClock size={18} /> Ver calendario
+          </Link>
         </div>
 
-        <div className="card">
+        <div className="card stu-card">
           <TitleRow icon={TrendingUp}>Progreso</TitleRow>
-          <div className="muted" style={{ marginTop: 6 }}>
+          <div className="muted stu-text">
             Revisa tu evolución: constancia, objetivos, mejoras y seguimiento.
           </div>
-          <div style={{ marginTop: 12 }}>
-            <Link className="btn" to="/student/progress">
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                <TrendingUp size={18} />
-                Ver mi progreso
-              </span>
-            </Link>
-          </div>
+          <Link className="stu-linkBtn" to="/student/progress">
+            <TrendingUp size={18} /> Ver mi progreso
+          </Link>
         </div>
 
-        <div className="card">
+        <div className="card stu-card">
           <TitleRow icon={CreditCard}>Pagos</TitleRow>
-          <div className="muted" style={{ marginTop: 6 }}>
+          <div className="muted stu-text">
             Consulta tus pagos, estado y próximas cuotas.
           </div>
-          <div style={{ marginTop: 12 }}>
-            <Link className="btn" to="/student/payments">
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                <CreditCard size={18} />
-                Ver pagos
-              </span>
-            </Link>
-          </div>
+          <Link className="stu-linkBtn" to="/student/payments">
+            <CreditCard size={18} /> Ver pagos
+          </Link>
         </div>
       </div>
 
       {/* Tips / CTA */}
-      <div className="card">
+      <div className="card stu-tips">
         <TitleRow icon={Flame}>Tips del día</TitleRow>
 
-        <div className="muted" style={{ marginTop: 6, lineHeight: 1.6 }}>
+        <div className="muted stu-tipText">
           • Llega 10 min antes para calentar bien.<br />
           • Técnica primero, potencia después.<br />
           • Constancia = progreso real.
         </div>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
-          <a className="btn btn-primary" href="/contacto" target="_blank" rel="noreferrer">
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-              <MessageCircle size={18} />
-              Consultar por WhatsApp
-            </span>
+        <div className="stu-cta">
+          <a className="stu-ctaBtn primary" href="/contacto" target="_blank" rel="noreferrer">
+            <MessageCircle size={18} /> Consultar por WhatsApp
           </a>
 
-          <Link className="btn" to="/tienda">
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-              <Store size={18} />
-              Ver tienda
-            </span>
+          <Link className="stu-ctaBtn" to="/tienda">
+            <Store size={18} /> Ver tienda
           </Link>
         </div>
       </div>

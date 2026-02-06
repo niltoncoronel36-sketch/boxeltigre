@@ -1,5 +1,6 @@
+import "./CategoriesPage.css";
 import React, { useEffect, useMemo, useState } from "react";
-import { api } from "../services/api"; // ✅ CAMBIO: usar el api con Bearer token
+import { api } from "../services/api"; // ✅ usa api con Bearer token
 import {
   Layers,
   Users,
@@ -148,7 +149,8 @@ export default function CategoriesPage() {
     setServerError(null);
 
     try {
-      const res = await api.get<Paginator<Category>>("/api/categories", { params });
+      // ✅ baseURL ya incluye /api -> aquí NO debe ir /api
+      const res = await api.get<Paginator<Category>>("/categories", { params });
       setItems(res.data.data ?? []);
       setPage(res.data.current_page ?? 1);
       setLastPage(res.data.last_page ?? 1);
@@ -234,9 +236,9 @@ export default function CategoriesPage() {
       }
 
       if (editing) {
-        await api.put(`/api/categories/${editing.id}`, data);
+        await api.put(`/categories/${editing.id}`, data);
       } else {
-        await api.post(`/api/categories`, data);
+        await api.post(`/categories`, data);
         setPage(1);
       }
 
@@ -261,7 +263,7 @@ export default function CategoriesPage() {
     setItems((prev) => prev.map((x) => (x.id === cat.id ? { ...x, is_active: next } : x)));
 
     try {
-      await api.patch(`/api/categories/${cat.id}`, { is_active: next });
+      await api.patch(`/categories/${cat.id}`, { is_active: next });
     } catch (e: any) {
       setItems((prev) => prev.map((x) => (x.id === cat.id ? { ...x, is_active: !next } : x)));
       setServerError(e?.response?.data?.message ?? "No se pudo cambiar el estado.");
@@ -272,7 +274,7 @@ export default function CategoriesPage() {
     if (!confirm(`¿Eliminar la categoría "${cat.name}"?`)) return;
 
     try {
-      await api.delete(`/api/categories/${cat.id}`);
+      await api.delete(`/categories/${cat.id}`);
       if (items.length === 1 && page > 1) setPage(page - 1);
       await fetchCategories();
     } catch (e: any) {

@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
+import "./CreditPanel.css";
+
 import {
   CalendarDays,
   CreditCard,
@@ -22,10 +24,10 @@ import { todayYmd, toYmd } from "../utils/dates";
 import { clamp } from "../utils/helpers";
 import { moneyPENFromCents } from "../utils/money";
 
-// ✅ DATA EMPRESA (igual que matrícula). Edita a tu gusto.
+/* ✅ DATA EMPRESA */
 const BUSINESS = {
   name: "Club de Box El Tigre",
-  ruc: "", // opcional
+  ruc: "",
   phone: "+51 999 999 999",
   address: "Jr. Ancash 415, Huancayo 12001",
   city: "Huancayo - Perú",
@@ -44,7 +46,7 @@ type CreditForm = {
 };
 
 function safeYmdWithDay(day: number) {
-  const base = todayYmd(); // YYYY-MM-DD
+  const base = todayYmd();
   const y = base.slice(0, 4);
   const m = base.slice(5, 7);
   const safeDay = clamp(Number(day) || 5, 1, 28);
@@ -246,78 +248,76 @@ function InstallmentReceiptModal(props: {
   }
 
   return (
-    <div style={receiptOverlay} onMouseDown={onClose}>
-      <div style={receiptCard} onMouseDown={(e) => e.stopPropagation()}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ fontWeight: 900, fontSize: 14 }}>Nota de venta — Cuota</div>
-          <button style={receiptCloseBtn} onClick={onClose} type="button">
+    <div className="cp-modal cp-modal--receipt" onMouseDown={onClose}>
+      <div className="cp-receipt" onMouseDown={(e) => e.stopPropagation()}>
+        <div className="cp-receiptHead">
+          <div className="cp-receiptTitle">Nota de venta — Cuota</div>
+          <button className="cp-iconBtn" onClick={onClose} type="button" aria-label="Cerrar">
             <X size={16} />
           </button>
         </div>
 
-        <div style={receiptBody}>
-          {/* ✅ Empresa (igual que matrícula) */}
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ fontWeight: 900, fontSize: 13, color: "#111827" }}>{BUSINESS.name}</div>
-            <div style={{ fontSize: 12, fontWeight: 800, color: "#64748b" }}>{BUSINESS.address}</div>
-            <div style={{ fontSize: 12, fontWeight: 800, color: "#64748b" }}>{BUSINESS.city}</div>
-            <div style={{ fontSize: 12, fontWeight: 800, color: "#64748b" }}>
-              Tel: <b style={{ color: "#111827" }}>{BUSINESS.phone}</b>
+        <div className="cp-receiptBody">
+          <div className="cp-biz">
+            <div className="cp-bizName">{BUSINESS.name}</div>
+            <div className="cp-bizLine">{BUSINESS.address}</div>
+            <div className="cp-bizLine">{BUSINESS.city}</div>
+            <div className="cp-bizLine">
+              Tel: <b>{BUSINESS.phone}</b>
               {BUSINESS.ruc ? (
                 <>
                   {" "}
-                  • RUC: <b style={{ color: "#111827" }}>{BUSINESS.ruc}</b>
+                  • RUC: <b>{BUSINESS.ruc}</b>
                 </>
               ) : null}
             </div>
           </div>
 
-          <div style={receiptHeaderRow}>
+          <div className="cp-receiptTop">
             <div>
-              <div style={receiptK}>N°</div>
-              <div style={{ fontWeight: 900, fontSize: 16 }}>{receiptNo}</div>
-              <div style={receiptM}>
+              <div className="cp-k">N°</div>
+              <div className="cp-receiptNo">{receiptNo}</div>
+              <div className="cp-m">
                 Pago exacto: <b>{paidAtExact}</b>
               </div>
             </div>
-            <div style={{ textAlign: "right" }}>
-              <div style={receiptK}>Total</div>
-              <div style={{ fontWeight: 900, fontSize: 18 }}>{moneyPENFromCents(charge.amount_cents)}</div>
+            <div className="cp-receiptTotal">
+              <div className="cp-k">Total</div>
+              <div className="cp-receiptAmount">{moneyPENFromCents(charge.amount_cents)}</div>
             </div>
           </div>
 
-          <div style={receiptGrid}>
-            <div style={receiptBox}>
-              <div style={receiptK}>Alumno</div>
-              <div style={receiptV}>{studentName}</div>
-              <div style={receiptM}>Matrícula ID: {enrollment.id}</div>
-              <div style={receiptM}>Categoría: {category}</div>
+          <div className="cp-receiptGrid">
+            <div className="cp-box">
+              <div className="cp-k">Alumno</div>
+              <div className="cp-v">{studentName}</div>
+              <div className="cp-m">Matrícula ID: {enrollment.id}</div>
+              <div className="cp-m">Categoría: {category}</div>
             </div>
 
-            <div style={receiptBox}>
-              <div style={receiptK}>Detalle</div>
-              <div style={receiptV}>Cuota #{installmentNumber ?? "—"}</div>
-              <div style={receiptM}>Vence: {fmtYmd(charge.due_on)}</div>
-              <div style={receiptM}>Mensualidad ref.: {moneyPENFromCents(monthlyFeeCents)}</div>
+            <div className="cp-box">
+              <div className="cp-k">Detalle</div>
+              <div className="cp-v">Cuota #{installmentNumber ?? "—"}</div>
+              <div className="cp-m">Vence: {fmtYmd(charge.due_on)}</div>
+              <div className="cp-m">Mensualidad ref.: {moneyPENFromCents(monthlyFeeCents)}</div>
             </div>
 
-            <div style={receiptBox}>
-              <div style={receiptK}>Método</div>
-              <div style={receiptV}>{methodLabel((charge as any).method)}</div>
+            <div className="cp-box">
+              <div className="cp-k">Método</div>
+              <div className="cp-v">{methodLabel((charge as any).method)}</div>
             </div>
 
-            <div style={receiptBox}>
-              <div style={receiptK}>Fecha</div>
-              <div style={receiptV}>{fmtYmd((charge as any).paid_on) ?? "—"}</div>
-              <div style={receiptM}>Hora exacta: {paidAtExact}</div>
+            <div className="cp-box">
+              <div className="cp-k">Fecha</div>
+              <div className="cp-v">{fmtYmd((charge as any).paid_on) ?? "—"}</div>
+              <div className="cp-m">Hora exacta: {paidAtExact}</div>
             </div>
 
-            {/* ✅ Términos (igual que impresión) */}
-            <div style={{ ...receiptBox, gridColumn: "1 / -1" }}>
-              <div style={receiptK}>Términos y condiciones</div>
-              <div style={{ marginTop: 6, display: "grid", gap: 4 }}>
+            <div className="cp-box cp-box--full">
+              <div className="cp-k">Términos y condiciones</div>
+              <div className="cp-termsList">
                 {BUSINESS.terms.map((t, i) => (
-                  <div key={i} style={receiptM}>
+                  <div key={i} className="cp-m">
                     • {t}
                   </div>
                 ))}
@@ -325,16 +325,14 @@ function InstallmentReceiptModal(props: {
             </div>
           </div>
 
-          <div style={receiptFootNote}>
-            * Comprobante interno con fecha/hora exacta (seguridad).
-          </div>
+          <div className="cp-note">* Comprobante interno con fecha/hora exacta (seguridad).</div>
         </div>
 
-        <div style={receiptActions}>
-          <button style={receiptBtnPrimary} onClick={doPrint} type="button">
+        <div className="cp-receiptActions">
+          <button className="cp-btn cp-btn--dark" onClick={doPrint} type="button">
             <Printer size={16} /> Imprimir / Guardar PDF
           </button>
-          <button style={receiptBtnSecondary} onClick={onClose} type="button">
+          <button className="cp-btn" onClick={onClose} type="button">
             Cerrar
           </button>
         </div>
@@ -452,9 +450,6 @@ export function CreditPanel(props: {
         amount_cents: c.amount_cents,
         paid_cents: c.paid_cents,
         status: c.status,
-        method: (c as any).method as PaymentMethod | null | undefined,
-        paid_on: (c as any).paid_on as string | null | undefined,
-        updated_at: (c as any).updated_at as string | undefined,
       }));
     }
     return schedulePlanFallback.map((r) => ({
@@ -465,9 +460,6 @@ export function CreditPanel(props: {
       amount_cents: r.amount_cents,
       paid_cents: 0,
       status: "unpaid" as any,
-      method: null,
-      paid_on: null,
-      updated_at: undefined,
     }));
   }, [installments, schedulePlanFallback]);
 
@@ -620,57 +612,68 @@ export function CreditPanel(props: {
         monthlyFeeCents={monthlyFeeCents}
       />
 
-      <div style={containerStyle}>
-        <div style={headerSection}>
-          <div style={titleGroup}>
-            <Calculator size={16} color="#ff5722" />
-            <span style={titleText}>PLAN DE CUOTAS</span>
+      <div className="cp-card">
+        <div className="cp-head">
+          <div className="cp-titleRow">
+            <Calculator size={16} className="cp-iconAccent" />
+            <span className="cp-title">Plan de cuotas</span>
           </div>
-          {hasPlan && !open && <span style={activeBadge}>PROGRAMADO</span>}
+
+          {hasPlan && !open ? <span className="cp-badge">Programado</span> : null}
         </div>
 
         {!enabled ? (
-          <div style={lockedState}>
+          <div className="cp-locked">
             <Lock size={14} />
             <span>Habilite el pago inicial para programar crédito</span>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {hasPlan && !open && (
+          <div className="cp-body">
+            {hasPlan && !open ? (
               <>
-                <div style={summaryCard}>
-                  <div style={summaryItem}>
-                    <span style={summaryLabel}>CRÉDITO TOTAL</span>
-                    <span style={summaryValue}>{moneyPENFromCents(planTotalCents)}</span>
+                <div className="cp-summary">
+                  <div className="cp-summaryItem">
+                    <div className="cp-k">Crédito total</div>
+                    <div className="cp-summaryValue">{moneyPENFromCents(planTotalCents)}</div>
                   </div>
-                  <div style={summaryDivider} />
-                  <div style={summaryItem}>
-                    <span style={summaryLabel}>CUOTAS</span>
-                    <span style={summaryValue}>
+
+                  <div className="cp-divider" />
+
+                  <div className="cp-summaryItem">
+                    <div className="cp-k">Cuotas</div>
+                    <div className="cp-summaryValue">
                       {planCuotas || "—"}{" "}
-                      {planCuotas ? `de ${moneyPENFromCents(planTotalCents / Math.max(1, planCuotas))}` : ""}
-                    </span>
+                      {planCuotas ? (
+                        <span className="cp-muted">
+                          de {moneyPENFromCents(planTotalCents / Math.max(1, planCuotas))}
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
 
-                <div style={payStatsRow}>
-                  <div style={payStatBox}>
-                    <span style={payStatLabel}>PAGADAS</span>
-                    <span style={payStatValueGreen}>{paidCount}</span>
+                <div className="cp-stats">
+                  <div className="cp-stat">
+                    <div className="cp-k">Pagadas</div>
+                    <div className="cp-statValue cp-green">{paidCount}</div>
                   </div>
-                  <div style={payStatBox}>
-                    <span style={payStatLabel}>PENDIENTES</span>
-                    <span style={payStatValueOrange}>{pendingCount}</span>
+                  <div className="cp-stat">
+                    <div className="cp-k">Pendientes</div>
+                    <div className="cp-statValue cp-amber">{pendingCount}</div>
                   </div>
-                  <div style={payStatBox}>
-                    <span style={payStatLabel}>DÍA COBRO</span>
-                    <span style={payStatValueDark}>{planBillingDay || 5}</span>
+                  <div className="cp-stat">
+                    <div className="cp-k">Día cobro</div>
+                    <div className="cp-statValue">{planBillingDay || 5}</div>
                   </div>
                 </div>
 
-                <div style={methodRow}>
-                  <span style={methodLabelStyle}>Método para pagar cuotas:</span>
-                  <select style={methodSelect} value={payMethod} onChange={(e) => setPayMethod(e.target.value as PaymentMethod)}>
+                <div className="cp-method">
+                  <span className="cp-methodLabel">Método para pagar cuotas:</span>
+                  <select
+                    className="cp-input"
+                    value={payMethod}
+                    onChange={(e) => setPayMethod(e.target.value as PaymentMethod)}
+                  >
                     <option value="cash">Efectivo</option>
                     <option value="card">Tarjeta</option>
                     <option value="yape">Yape</option>
@@ -679,14 +682,16 @@ export function CreditPanel(props: {
                   </select>
                 </div>
 
-                <div style={installmentsCard}>
-                  <div style={installmentsHeader}>
-                    <Info size={14} />
-                    <span style={{ fontWeight: 900, fontSize: 11, color: "#475569" }}>CUOTAS PROGRAMADAS (PAGAR)</span>
+                <div className="cp-installments">
+                  <div className="cp-installmentsHead">
+                    <div className="cp-installmentsTitle">
+                      <Info size={14} />
+                      <span>Cuotas programadas</span>
+                    </div>
 
                     <button
                       type="button"
-                      style={historyBtn}
+                      className="cp-btn cp-btn--ghost"
                       onClick={downloadHistoryPdf}
                       disabled={!installments || !installments.length}
                       title={!installments ? "Aún no hay cuotas reales en backend" : "Imprimir/Guardar PDF"}
@@ -694,44 +699,43 @@ export function CreditPanel(props: {
                       <Printer size={14} /> Historial (PDF)
                     </button>
 
-                    <span style={{ marginLeft: "auto", fontSize: 11, color: "#94a3b8", fontWeight: 900 }}>
-                      {installmentsLoading ? "Cargando..." : ""}
-                    </span>
+                    <div className="cp-loadHint">{installmentsLoading ? "Cargando..." : ""}</div>
                   </div>
 
-                  <div style={installmentsBody}>
+                  <div className="cp-installmentsBody">
                     {rows.map((row) => {
                       const paid = row.status === "paid";
                       const partial = row.status === "partial";
                       const remaining = Math.max(0, row.amount_cents - (row.paid_cents || 0));
 
                       return (
-                        <div key={row.key} style={installmentRow}>
-                          <div style={{ display: "flex", flexDirection: "column" }}>
-                            <div style={installmentTop}>
-                              <span style={installmentIdx}>#{row.idx}</span>
-                              <span style={installmentDue}>{fmtYmd(row.due_on)}</span>
+                        <div key={row.key} className="cp-row">
+                          <div className="cp-rowLeft">
+                            <div className="cp-rowTop">
+                              <span className="cp-idx">#{row.idx}</span>
+                              <span className="cp-due">{fmtYmd(row.due_on)}</span>
                             </div>
 
-                            <div style={installmentAmount}>{moneyPENFromCents(row.amount_cents)}</div>
+                            <div className="cp-amount">{moneyPENFromCents(row.amount_cents)}</div>
 
                             {partial ? (
-                              <div style={partialNote}>
-                                Parcial: {moneyPENFromCents(row.paid_cents)} • Falta: <b>{moneyPENFromCents(remaining)}</b>
+                              <div className="cp-partial">
+                                Parcial: {moneyPENFromCents(row.paid_cents)} • Falta:{" "}
+                                <b>{moneyPENFromCents(remaining)}</b>
                               </div>
                             ) : null}
                           </div>
 
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <div className="cp-rowRight">
                             {paid && row.charge ? (
                               <>
-                                <div style={paidPill}>
+                                <div className="cp-paid">
                                   <CheckCircle size={14} />
                                   Pagada
                                 </div>
                                 <button
                                   type="button"
-                                  style={receiptMiniBtn}
+                                  className="cp-iconBtn"
                                   onClick={() => openReceiptForPaid(row.charge, row.idx)}
                                   title="Ver / imprimir nota de venta"
                                 >
@@ -739,11 +743,16 @@ export function CreditPanel(props: {
                                 </button>
                               </>
                             ) : row.charge ? (
-                              <button style={payBtn} type="button" disabled={loading} onClick={() => handlePayCharge(row.charge, row.idx)}>
-                                PAGAR CUOTA
+                              <button
+                                className="cp-btn cp-btn--primary"
+                                type="button"
+                                disabled={loading}
+                                onClick={() => handlePayCharge(row.charge, row.idx)}
+                              >
+                                Pagar cuota
                               </button>
                             ) : (
-                              <div style={noBackendPill} title="Aún no hay cuotas reales en backend">
+                              <div className="cp-noBackend" title="Aún no hay cuotas reales en backend">
                                 Sin backend
                               </div>
                             )}
@@ -754,37 +763,40 @@ export function CreditPanel(props: {
                   </div>
                 </div>
               </>
-            )}
+            ) : null}
 
             <button
-              style={open ? toggleBtnActive : toggleBtn}
+              className={`cp-toggle ${open ? "is-open" : ""}`}
+              type="button"
               onClick={() => {
                 if (open) return closeEditor();
                 openEditor();
               }}
             >
               {open ? <ChevronUp size={16} /> : <CreditCard size={16} />}
-              {open ? "CANCELAR EDICIÓN" : hasPlan ? "RE-PROGRAMAR CUOTAS" : "CONFIGURAR CRÉDITO"}
+              {open ? "Cancelar edición" : hasPlan ? "Re-programar cuotas" : "Configurar crédito"}
             </button>
 
-            {open && (
-              <div style={editorPanel}>
-                <div style={formGrid}>
-                  <div style={inputWrapper}>
-                    <label style={labelStyle}>MONTO TOTAL (S/)</label>
+            {open ? (
+              <div className="cp-editor">
+                <div className="cp-formGrid">
+                  <div className="cp-field">
+                    <div className="cp-label">Monto total (S/)</div>
                     <input
-                      style={modernInput}
+                      className="cp-input"
                       value={creditForm.total_soles}
-                      onChange={(e) => setCreditForm((f) => ({ ...f, total_soles: e.target.value.replace(/[^\d.]/g, "") }))}
+                      onChange={(e) =>
+                        setCreditForm((f) => ({ ...f, total_soles: e.target.value.replace(/[^\d.]/g, "") }))
+                      }
                       inputMode="decimal"
                       placeholder="Ej: 600.00"
                     />
                   </div>
 
-                  <div style={inputWrapper}>
-                    <label style={labelStyle}>N° CUOTAS</label>
+                  <div className="cp-field">
+                    <div className="cp-label">N° cuotas</div>
                     <input
-                      style={modernInput}
+                      className="cp-input"
                       value={creditForm.cuotas}
                       onChange={(e) =>
                         setCreditForm((f) => ({ ...f, cuotas: Number(e.target.value.replace(/[^\d]/g, "")) || 1 }))
@@ -793,53 +805,47 @@ export function CreditPanel(props: {
                     />
                   </div>
 
-                  <div style={{ ...inputWrapper, gridColumn: "span 2" }}>
-                    <label style={labelStyle}>PRIMER VENCIMIENTO (DETERMINA EL DÍA DE PAGO)</label>
-                    <div style={{ position: "relative" }}>
+                  <div className="cp-field cp-field--full">
+                    <div className="cp-label">Primer vencimiento (define el día de cobro)</div>
+                    <div className="cp-dateWrap">
+                      <CalendarDays size={14} className="cp-dateIcon" />
                       <input
-                        style={{ ...modernInput, width: "100%", paddingLeft: "35px", paddingRight: "16px" }}
+                        className="cp-input cp-dateInput"
                         type="date"
                         value={creditForm.pay_day_date}
                         onChange={(e) => setCreditForm((f) => ({ ...f, pay_day_date: e.target.value }))}
                       />
-                      <CalendarDays size={14} style={inputIcon} />
                     </div>
                   </div>
                 </div>
 
-                <div style={previewBox}>
-                  <div style={previewHeader}>
+                <div className="cp-preview">
+                  <div className="cp-previewHead">
                     <Info size={14} />
                     <span>
                       Vista previa: {cuotas} cuotas de <b>{moneyPENFromCents(cuotaCentsPreview)}</b>{" "}
-                      <span style={{ opacity: 0.7 }}>
-                        • Día cobro: <b>{creditPayDay}</b>
-                      </span>
+                      <span className="cp-muted">• Día cobro: <b>{creditPayDay}</b></span>
                     </span>
                   </div>
 
-                  <div style={tableContainer}>
+                  <div className="cp-previewBody">
                     {schedulePreview.length === 0 ? (
-                      <div style={{ padding: 12, fontSize: 12, color: "#64748b" }}>
-                        Ingresa un monto mayor a 0 para ver el cronograma.
-                      </div>
+                      <div className="cp-previewEmpty">Ingresa un monto mayor a 0 para ver el cronograma.</div>
                     ) : (
-                      <table style={miniTable}>
+                      <table className="cp-table">
                         <thead>
                           <tr>
-                            <th style={thStyle}>#</th>
-                            <th style={thStyle}>VENCIMIENTO</th>
-                            <th style={{ ...thStyle, textAlign: "right" }}>MONTO</th>
+                            <th>#</th>
+                            <th>Vencimiento</th>
+                            <th className="cp-right">Monto</th>
                           </tr>
                         </thead>
                         <tbody>
                           {schedulePreview.map((row) => (
                             <tr key={row.idx}>
-                              <td style={tdStyle}>{row.idx}</td>
-                              <td style={tdStyle}>{row.due_on}</td>
-                              <td style={{ ...tdStyle, textAlign: "right", fontWeight: 700 }}>
-                                {moneyPENFromCents(row.amount_cents)}
-                              </td>
+                              <td>{row.idx}</td>
+                              <td>{row.due_on}</td>
+                              <td className="cp-right">{moneyPENFromCents(row.amount_cents)}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -849,13 +855,14 @@ export function CreditPanel(props: {
                 </div>
 
                 {savedOk ? (
-                  <div style={savedOkStyle}>
+                  <div className="cp-ok">
                     <CheckCircle size={16} /> Programación guardada
                   </div>
                 ) : null}
 
                 <button
-                  style={saveBtn}
+                  className="cp-btn cp-btn--save"
+                  type="button"
                   disabled={totalCents <= 0 || loading}
                   onClick={async () => {
                     try {
@@ -882,623 +889,18 @@ export function CreditPanel(props: {
                   }}
                 >
                   {loading ? (
-                    "PROCESANDO..."
+                    "Procesando..."
                   ) : (
                     <>
-                      <Save size={16} /> GUARDAR PROGRAMACIÓN
+                      <Save size={16} /> Guardar programación
                     </>
                   )}
                 </button>
               </div>
-            )}
+            ) : null}
           </div>
         )}
       </div>
     </>
   );
 }
-
-/**
- * ⚠️ NOTA:
- * Tu archivo real ya tiene todas estas constantes de estilos:
- * containerStyle, headerSection, titleGroup, titleText, activeBadge, lockedState,
- * summaryCard, summaryItem, summaryLabel, summaryValue, summaryDivider,
- * payStatsRow, payStatBox, payStatLabel, payStatValueGreen, payStatValueOrange, payStatValueDark,
- * methodRow, methodLabelStyle, methodSelect,
- * installmentsCard, installmentsHeader, historyBtn, installmentsBody, installmentRow, installmentTop,
- * installmentIdx, installmentDue, installmentAmount, partialNote, paidPill, receiptMiniBtn, payBtn, noBackendPill,
- * toggleBtn, toggleBtnActive, editorPanel, formGrid, inputWrapper, labelStyle, modernInput, inputIcon,
- * previewBox, previewHeader, tableContainer, miniTable, thStyle, tdStyle, savedOkStyle, saveBtn,
- * receiptOverlay, receiptCard, receiptCloseBtn, receiptBody, receiptHeaderRow, receiptGrid, receiptBox,
- * receiptK, receiptV, receiptM, receiptFootNote, receiptActions, receiptBtnPrimary, receiptBtnSecondary
- *
- * No los toqué aquí. Déjalos igual al final de tu archivo.
- */
-
-
-
-
-
-// =========================
-// ✅ ESTILOS CreditPanel + Nota de venta (Cuota)
-// Pega esto AL FINAL de tu CreditPanel.tsx
-// (Asegúrate de NO tenerlos duplicados arriba.)
-// =========================
-
-const containerStyle: React.CSSProperties = {
-  borderRadius: 18,
-  border: "1px solid rgba(0,0,0,.08)",
-  background: "rgba(255,255,255,.92)",
-  boxShadow: "0 14px 40px rgba(0,0,0,.06)",
-  padding: 14,
-};
-
-const headerSection: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 12,
-  marginBottom: 10,
-};
-
-const titleGroup: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-};
-
-const titleText: React.CSSProperties = {
-  fontWeight: 900,
-  fontSize: 12,
-  letterSpacing: 0.8,
-  color: "rgba(2,6,23,.80)",
-};
-
-const activeBadge: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  padding: "6px 10px",
-  borderRadius: 999,
-  fontWeight: 900,
-  fontSize: 11,
-  letterSpacing: 0.4,
-  border: "1px solid rgba(74,222,128,.24)",
-  background: "rgba(74,222,128,.10)",
-  color: "rgba(2,6,23,.85)",
-};
-
-const lockedState: React.CSSProperties = {
-  borderRadius: 16,
-  border: "1px dashed rgba(0,0,0,.18)",
-  background: "rgba(2,6,23,.02)",
-  padding: 14,
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  color: "rgba(2,6,23,.65)",
-  fontWeight: 900,
-  fontSize: 12,
-};
-
-const summaryCard: React.CSSProperties = {
-  borderRadius: 16,
-  border: "1px solid rgba(0,0,0,.08)",
-  background: "linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.80))",
-  padding: 12,
-  display: "grid",
-  gridTemplateColumns: "1fr auto 1fr",
-  alignItems: "center",
-  gap: 12,
-};
-
-const summaryItem: React.CSSProperties = {
-  display: "grid",
-  gap: 6,
-};
-
-const summaryLabel: React.CSSProperties = {
-  fontWeight: 900,
-  fontSize: 11,
-  letterSpacing: 0.6,
-  color: "rgba(2,6,23,.55)",
-};
-
-const summaryValue: React.CSSProperties = {
-  fontWeight: 900,
-  fontSize: 14,
-  color: "rgba(2,6,23,.88)",
-};
-
-const summaryDivider: React.CSSProperties = {
-  width: 1,
-  height: 42,
-  background: "rgba(0,0,0,.10)",
-  borderRadius: 999,
-};
-
-const payStatsRow: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr 1fr",
-  gap: 10,
-};
-
-const payStatBox: React.CSSProperties = {
-  borderRadius: 16,
-  border: "1px solid rgba(0,0,0,.08)",
-  background: "rgba(255,255,255,.85)",
-  padding: 12,
-  display: "grid",
-  gap: 6,
-};
-
-const payStatLabel: React.CSSProperties = {
-  fontWeight: 900,
-  fontSize: 11,
-  letterSpacing: 0.6,
-  color: "rgba(2,6,23,.55)",
-};
-
-const payStatValueGreen: React.CSSProperties = {
-  fontWeight: 900,
-  fontSize: 16,
-  color: "rgba(22,163,74,.95)",
-};
-
-const payStatValueOrange: React.CSSProperties = {
-  fontWeight: 900,
-  fontSize: 16,
-  color: "rgba(234,88,12,.95)",
-};
-
-const payStatValueDark: React.CSSProperties = {
-  fontWeight: 900,
-  fontSize: 16,
-  color: "rgba(2,6,23,.90)",
-};
-
-const methodRow: React.CSSProperties = {
-  marginTop: 2,
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  flexWrap: "wrap",
-};
-
-const methodLabelStyle: React.CSSProperties = {
-  fontWeight: 900,
-  fontSize: 12,
-  color: "rgba(2,6,23,.65)",
-};
-
-const methodSelect: React.CSSProperties = {
-  padding: "10px 12px",
-  borderRadius: 14,
-  border: "1px solid rgba(0,0,0,.10)",
-  background: "rgba(255,255,255,.92)",
-  fontWeight: 900,
-  fontSize: 12,
-  color: "rgba(2,6,23,.86)",
-  outline: "none",
-};
-
-const installmentsCard: React.CSSProperties = {
-  borderRadius: 18,
-  border: "1px solid rgba(0,0,0,.08)",
-  background: "rgba(255,255,255,.92)",
-  overflow: "hidden",
-};
-
-const installmentsHeader: React.CSSProperties = {
-  padding: "12px 12px",
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  borderBottom: "1px solid rgba(0,0,0,.06)",
-  background: "rgba(2,6,23,.02)",
-};
-
-const historyBtn: React.CSSProperties = {
-  marginLeft: 8,
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "8px 10px",
-  borderRadius: 14,
-  border: "1px solid rgba(0,0,0,.10)",
-  background: "rgba(255,255,255,.92)",
-  fontWeight: 900,
-  fontSize: 12,
-  color: "rgba(2,6,23,.85)",
-  cursor: "pointer",
-};
-
-const installmentsBody: React.CSSProperties = {
-  padding: 12,
-  display: "grid",
-  gap: 10,
-};
-
-const installmentRow: React.CSSProperties = {
-  borderRadius: 16,
-  border: "1px solid rgba(0,0,0,.08)",
-  background: "rgba(255,255,255,.95)",
-  padding: 12,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 12,
-};
-
-const installmentTop: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-};
-
-const installmentIdx: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: 34,
-  height: 26,
-  borderRadius: 10,
-  fontWeight: 900,
-  fontSize: 12,
-  border: "1px solid rgba(0,0,0,.10)",
-  background: "rgba(2,6,23,.03)",
-  color: "rgba(2,6,23,.85)",
-};
-
-const installmentDue: React.CSSProperties = {
-  fontWeight: 900,
-  fontSize: 12,
-  color: "rgba(2,6,23,.70)",
-};
-
-const installmentAmount: React.CSSProperties = {
-  marginTop: 6,
-  fontWeight: 900,
-  fontSize: 16,
-  color: "rgba(2,6,23,.92)",
-};
-
-const partialNote: React.CSSProperties = {
-  marginTop: 6,
-  fontSize: 12,
-  fontWeight: 800,
-  color: "rgba(234,88,12,.95)",
-};
-
-const paidPill: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "8px 10px",
-  borderRadius: 999,
-  border: "1px solid rgba(74,222,128,.22)",
-  background: "rgba(74,222,128,.10)",
-  fontWeight: 900,
-  fontSize: 12,
-  color: "rgba(2,6,23,.85)",
-};
-
-const receiptMiniBtn: React.CSSProperties = {
-  width: 38,
-  height: 38,
-  borderRadius: 14,
-  border: "1px solid rgba(0,0,0,.10)",
-  background: "rgba(255,255,255,.92)",
-  display: "grid",
-  placeItems: "center",
-  cursor: "pointer",
-};
-
-const payBtn: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: "10px 12px",
-  borderRadius: 14,
-  border: "1px solid rgba(255,122,24,.25)",
-  background: "linear-gradient(135deg, rgba(255,122,24,1), rgba(255,190,64,.95))",
-  color: "#111827",
-  fontWeight: 900,
-  fontSize: 12,
-  cursor: "pointer",
-  boxShadow: "0 16px 40px rgba(255,122,24,.18)",
-};
-
-const noBackendPill: React.CSSProperties = {
-  padding: "10px 12px",
-  borderRadius: 14,
-  border: "1px dashed rgba(0,0,0,.18)",
-  background: "rgba(2,6,23,.02)",
-  fontWeight: 900,
-  fontSize: 12,
-  color: "rgba(2,6,23,.55)",
-};
-
-const toggleBtn: React.CSSProperties = {
-  width: "100%",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 10,
-  padding: "12px 14px",
-  borderRadius: 18,
-  border: "1px solid rgba(0,0,0,.10)",
-  background: "rgba(2,6,23,.04)",
-  color: "rgba(2,6,23,.86)",
-  fontWeight: 900,
-  cursor: "pointer",
-};
-
-const toggleBtnActive: React.CSSProperties = {
-  ...toggleBtn,
-  background: "rgba(255,122,24,.10)",
-  border: "1px solid rgba(255,122,24,.18)",
-};
-
-const editorPanel: React.CSSProperties = {
-  borderRadius: 18,
-  border: "1px solid rgba(0,0,0,.08)",
-  background: "rgba(255,255,255,.92)",
-  padding: 14,
-};
-
-const formGrid: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 12,
-};
-
-const inputWrapper: React.CSSProperties = {
-  display: "grid",
-  gap: 8,
-};
-
-const labelStyle: React.CSSProperties = {
-  fontWeight: 900,
-  fontSize: 11,
-  letterSpacing: 0.6,
-  color: "rgba(2,6,23,.60)",
-};
-
-const modernInput: React.CSSProperties = {
-  width: "100%",
-  padding: "12px 12px",
-  borderRadius: 14,
-  border: "1px solid rgba(0,0,0,.10)",
-  background: "rgba(255,255,255,.92)",
-  fontWeight: 900,
-  fontSize: 12,
-  color: "rgba(2,6,23,.86)",
-  outline: "none",
-};
-
-const inputIcon: React.CSSProperties = {
-  position: "absolute",
-  left: 12,
-  top: "50%",
-  transform: "translateY(-50%)",
-  opacity: 0.7,
-};
-
-const previewBox: React.CSSProperties = {
-  marginTop: 12,
-  borderRadius: 18,
-  border: "1px solid rgba(0,0,0,.08)",
-  background: "rgba(2,6,23,.02)",
-  overflow: "hidden",
-};
-
-const previewHeader: React.CSSProperties = {
-  padding: "10px 12px",
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  borderBottom: "1px solid rgba(0,0,0,.06)",
-  fontSize: 12,
-  fontWeight: 900,
-  color: "rgba(2,6,23,.70)",
-};
-
-const tableContainer: React.CSSProperties = {
-  padding: 10,
-  overflowX: "auto",
-};
-
-const miniTable: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "collapse",
-  fontSize: 12,
-  background: "rgba(255,255,255,.92)",
-  borderRadius: 14,
-  overflow: "hidden",
-};
-
-const thStyle: React.CSSProperties = {
-  padding: 10,
-  textAlign: "left",
-  fontSize: 10,
-  fontWeight: 900,
-  letterSpacing: 0.6,
-  color: "rgba(2,6,23,.55)",
-  borderBottom: "1px solid rgba(0,0,0,.08)",
-  background: "rgba(2,6,23,.02)",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: 10,
-  borderBottom: "1px solid rgba(0,0,0,.06)",
-  fontWeight: 800,
-  color: "rgba(2,6,23,.82)",
-};
-
-const savedOkStyle: React.CSSProperties = {
-  marginTop: 12,
-  borderRadius: 16,
-  border: "1px solid rgba(74,222,128,.24)",
-  background: "rgba(74,222,128,.10)",
-  padding: "12px 14px",
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  fontWeight: 900,
-  color: "rgba(2,6,23,.86)",
-};
-
-const saveBtn: React.CSSProperties = {
-  marginTop: 12,
-  width: "100%",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 10,
-  padding: "12px 14px",
-  borderRadius: 18,
-  border: "1px solid rgba(59,130,246,.22)",
-  background: "linear-gradient(135deg, rgba(59,130,246,1), rgba(147,197,253,.95))",
-  color: "#0b1220",
-  fontWeight: 900,
-  cursor: "pointer",
-  boxShadow: "0 16px 40px rgba(59,130,246,.15)",
-};
-
-// =========================
-// ✅ Modal Nota de venta — Cuota (mismos estilos pro)
-// =========================
-const receiptOverlay: React.CSSProperties = {
-  position: "fixed",
-  inset: 0,
-  background: "rgba(2, 6, 23, .65)",
-  backdropFilter: "blur(8px)",
-  WebkitBackdropFilter: "blur(8px)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 18,
-  zIndex: 80,
-};
-
-const receiptCard: React.CSSProperties = {
-  width: "min(780px, 96vw)",
-  borderRadius: 22,
-  background: "rgba(255,255,255,.95)",
-  border: "1px solid rgba(0,0,0,.08)",
-  boxShadow: "0 20px 80px rgba(0,0,0,.30)",
-  padding: 14,
-};
-
-const receiptCloseBtn: React.CSSProperties = {
-  marginLeft: "auto",
-  width: 38,
-  height: 38,
-  borderRadius: 14,
-  border: "1px solid rgba(0,0,0,.10)",
-  background: "rgba(2,6,23,.04)",
-  display: "grid",
-  placeItems: "center",
-  cursor: "pointer",
-};
-
-const receiptBody: React.CSSProperties = {
-  marginTop: 12,
-  borderRadius: 18,
-  border: "1px solid rgba(0,0,0,.06)",
-  background: "rgba(255,255,255,.86)",
-  padding: 14,
-};
-
-const receiptHeaderRow: React.CSSProperties = {
-  display: "flex",
-  alignItems: "flex-start",
-  justifyContent: "space-between",
-  gap: 12,
-  paddingBottom: 10,
-  borderBottom: "1px dashed rgba(0,0,0,.12)",
-};
-
-const receiptGrid: React.CSSProperties = {
-  marginTop: 12,
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 12,
-};
-
-const receiptBox: React.CSSProperties = {
-  borderRadius: 16,
-  border: "1px solid rgba(0,0,0,.06)",
-  background: "rgba(255,255,255,.92)",
-  padding: 12,
-};
-
-const receiptK: React.CSSProperties = {
-  fontSize: 11,
-  fontWeight: 900,
-  letterSpacing: 0.6,
-  color: "rgba(2,6,23,.55)",
-  textTransform: "uppercase",
-};
-
-const receiptV: React.CSSProperties = {
-  marginTop: 6,
-  fontSize: 13,
-  fontWeight: 900,
-  color: "rgba(2,6,23,.88)",
-};
-
-const receiptM: React.CSSProperties = {
-  marginTop: 4,
-  fontSize: 12,
-  fontWeight: 800,
-  color: "rgba(2,6,23,.60)",
-};
-
-const receiptFootNote: React.CSSProperties = {
-  marginTop: 12,
-  padding: "10px 12px",
-  borderRadius: 16,
-  border: "1px dashed rgba(0,0,0,.12)",
-  background: "rgba(2,6,23,.02)",
-  fontSize: 12,
-  fontWeight: 800,
-  color: "rgba(2,6,23,.72)",
-};
-
-const receiptActions: React.CSSProperties = {
-  marginTop: 12,
-  display: "flex",
-  gap: 10,
-  justifyContent: "flex-end",
-  flexWrap: "wrap",
-};
-
-const receiptBtnPrimary: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 10,
-  padding: "12px 16px",
-  borderRadius: 16,
-  border: "1px solid rgba(2,6,23,.18)",
-  background: "rgba(2,6,23,.95)",
-  color: "white",
-  fontWeight: 900,
-  fontSize: 12,
-  cursor: "pointer",
-  boxShadow: "0 16px 40px rgba(2,6,23,.22)",
-};
-
-const receiptBtnSecondary: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 10,
-  padding: "12px 16px",
-  borderRadius: 16,
-  border: "1px solid rgba(0,0,0,.10)",
-  background: "rgba(255,255,255,.92)",
-  color: "rgba(2,6,23,.86)",
-  fontWeight: 900,
-  fontSize: 12,
-  cursor: "pointer",
-};

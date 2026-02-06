@@ -1,7 +1,7 @@
+import "./layout.css";
 import React, { useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
-import "./layout.css";
 
 import {
   LayoutDashboard,
@@ -16,8 +16,7 @@ import {
   ExternalLink,
   LogOut,
   ClipboardCheck,
-  BarChart3, // ✅ NUEVO
-  Newspaper, // ✅ NUEVO
+  BarChart3, // ✅ Reportes
 } from "lucide-react";
 
 export function Layout() {
@@ -98,23 +97,13 @@ export function Layout() {
             </NavLink>
           )}
 
-          {/* ✅ NUEVO: REPORTES (solo admin) */}
+          {/* ✅ REPORTES (solo admin) */}
           {isAdmin && (
             <NavLink title="Reportes" to="/reports" className={linkClass}>
               <span className="icon" aria-hidden="true">
                 <BarChart3 size={20} />
               </span>
               <span className="nav-text">Reportes</span>
-            </NavLink>
-          )}
-
-          {/* ✅ NUEVO: BLOG (solo admin) */}
-          {isAdmin && (
-            <NavLink title="Blog" to="/blog" className={linkClass}>
-              <span className="icon" aria-hidden="true">
-                <Newspaper size={20} />
-              </span>
-              <span className="nav-text">Blog</span>
             </NavLink>
           )}
 
@@ -172,15 +161,8 @@ export function Layout() {
             </div>
           )}
 
-          {/* ✅ EVENTOS SOLO ADMIN */}
-          {isAdmin && (
-            <NavLink title="Eventos" to="/events" className={linkClass}>
-              <span className="icon" aria-hidden="true">
-                <CalendarDays size={20} />
-              </span>
-              <span className="nav-text">Eventos</span>
-            </NavLink>
-          )}
+          {/* ✅ (Blog eliminado) */}
+          {/* ✅ (Eventos eliminado) */}
         </nav>
 
         <div className="sidebar-footer">

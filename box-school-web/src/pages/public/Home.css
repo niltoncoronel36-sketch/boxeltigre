@@ -1,0 +1,550 @@
+/* ===========================
+   HOME PAGE
+   Hero video full-bleed + sticky (debajo del nav)
+   Sin superposición de secciones
+   Tema: negro/blanco + naranja
+=========================== */
+
+.home-page{
+  --bg: #05070b;
+  --panel: rgba(255,255,255,.06);
+  --panel2: rgba(255,255,255,.04);
+  --border: rgba(255,255,255,.12);
+  --text: rgba(243,246,255,.94);
+  --muted: rgba(200,210,230,.72);
+
+  --accent: #fe5000;
+  --accent2: #fe5000;
+
+  /* ✅ ALTO DEL NAV (ajústalo si tu nav mide distinto) */
+  --nav-h: 74px;
+
+  color: var(--text);
+}
+
+/* ===========================
+   Layout
+=========================== */
+
+/* ✅ hero full width wrapper (pinned)
+   altura extra para que el video “se quede” mientras scrolleas */
+.home-bleed{
+  width: 100%;
+  padding: 0;
+  position: relative;
+
+  /* ✅ duración del pinned (sube/baja 140-220vh) */
+  height: calc(160vh + var(--nav-h));
+}
+
+/* wrapper centrado (secciones de abajo) */
+.home-wrap{
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 18px 18px 26px;
+
+  position: relative;
+  z-index: 2;
+
+  /* ✅ NO superponer sobre el video */
+  margin-top: 0;
+}
+
+/* helpers */
+.home-muted{ color: rgba(241,245,255,.70); }
+.home-strong{ font-weight: 900; }
+.home-h3{ font-weight: 950; font-size: 16px; }
+.home-stack{ display: grid; gap: 12px; }
+.home-row-space{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center; }
+.home-row-wrap{ display:flex; gap:10px; flex-wrap:wrap; align-items:baseline; }
+
+/* ===========================
+   HERO VIDEO (FULL BLEED + STICKY)
+   ✅ empieza justo debajo del nav
+=========================== */
+
+.home-hero{
+  position: sticky;
+  top: var(--nav-h);          /* ✅ debajo del nav fijo */
+  overflow: hidden;
+
+  width: 100%;
+  border-radius: 0;
+
+  /* ✅ ocupa pantalla sin tapar nav */
+  height: calc(100vh - var(--nav-h));
+  min-height: calc(100vh - var(--nav-h));
+
+  /* ✅ portada más “alta” visualmente (si quieres más grande, sube 92vh) */
+  /* min-height: 92vh;  (NO recomendado con sticky+nav porque puede tapar) */
+
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.2);
+}
+
+/* video cover */
+.home-hero__video{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit: cover;
+
+  transform: scale(1.08);
+  filter: blur(10px) brightness(.82) contrast(1.08);
+  opacity: 0;
+  transition: opacity .9s ease, transform 1.2s cubic-bezier(.2,.9,.2,1), filter 1.2s ease;
+}
+.home-hero__video.is-ready{ opacity: 1; }
+
+.home-hero.is-in .home-hero__video{
+  transform: scale(1);
+  filter: blur(0) brightness(.88) contrast(1.10);
+}
+
+/* overlays */
+.home-hero__shade{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  background:
+    radial-gradient(1100px 620px at 18% 10%, rgba(254,80,0,.18), transparent 55%),
+    radial-gradient(900px 520px at 85% 0%, rgba(255,255,255,.06), transparent 60%),
+    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.82));
+}
+
+/* particles */
+.home-hero__canvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:2;
+  pointer-events:none;
+  opacity:.95;
+}
+
+/* inner content centered */
+.home-hero__inner{
+  position: relative;
+  z-index: 3;
+  height: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: clamp(18px, 4vw, 46px) 18px;
+  display: grid;
+  align-content: center;
+}
+
+/* build entrance */
+.home-hero__build{
+  opacity: 0;
+  transform: translateY(14px);
+  filter: blur(10px);
+  transition: opacity .7s ease, transform .7s cubic-bezier(.2,.9,.2,1), filter .7s ease;
+}
+.home-hero.is-in .home-hero__build{
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+/* badge */
+.home-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.28);
+  color: rgba(241,245,255,.92);
+  font-weight: 950;
+  font-size: 12px;
+  width: fit-content;
+  backdrop-filter: blur(10px);
+}
+.home-badge__dot{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  box-shadow: 0 0 0 6px rgba(254,80,0,.14);
+}
+
+/* hero typography */
+.home-hero__h1{
+  margin: 14px 0 0;
+  font-size: clamp(38px, 5.6vw, 68px);
+  line-height: 1.02;
+  font-weight: 950;
+  letter-spacing: .2px;
+  text-shadow: 0 18px 55px rgba(0,0,0,.45);
+  max-width: 920px;
+}
+.home-hero__accent{
+  background: linear-gradient(90deg, var(--accent), rgba(255,255,255,.92));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.home-hero__p{
+  margin: 14px 0 0;
+  max-width: 760px;
+  line-height: 1.6;
+  color: rgba(241,245,255,.82);
+  font-size: 15px;
+}
+
+/* CTA */
+.home-hero__cta{
+  margin-top: 18px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.home-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 11px 14px;
+  border-radius: 14px;
+  font-weight: 950;
+  letter-spacing: .2px;
+  text-decoration:none;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.22);
+  color: rgba(241,245,255,.92);
+  box-shadow: 0 12px 35px rgba(0,0,0,.28);
+  transition: transform .15s ease, filter .15s ease, background .15s ease, border-color .15s ease;
+  cursor:pointer;
+}
+.home-btn:hover{ transform: translateY(-1px); filter: brightness(1.06); border-color: rgba(255,255,255,.24); }
+
+.home-btn--accent{
+  border-color: rgba(254,80,0,.42);
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  color:#fff;
+  box-shadow: 0 18px 55px rgba(254,80,0,.22);
+}
+.home-btn--outline{ background: rgba(0,0,0,.22); }
+.home-btn--ghost{ background: rgba(255,255,255,.06); }
+
+.home-btn--sm{
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+/* meta */
+.home-hero__meta{
+  margin-top: 14px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  color: rgba(241,245,255,.78);
+  font-size: 13px;
+}
+
+/* dots */
+.home-dots{
+  position:absolute;
+  left: 18px;
+  bottom: 14px;
+  z-index: 4;
+  display:flex;
+  gap: 8px;
+}
+.home-dot{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.22);
+  background: rgba(0,0,0,.25);
+  cursor: pointer;
+  opacity: .85;
+}
+.home-dot.is-active{
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-color: rgba(254,80,0,.35);
+  opacity: 1;
+}
+
+/* ===========================
+   SECCIONES (centradas)
+=========================== */
+
+.home-section{
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(1100px 520px at 20% 0%, rgba(254,80,0,.10), transparent 60%),
+    rgba(0,0,0,.18);
+  box-shadow: 0 24px 90px rgba(0,0,0,.55);
+  padding: 18px;
+}
+
+.home-section__head{ padding: 6px 0 14px; }
+.home-section__title{ margin: 0; font-weight: 950; font-size: 22px; }
+.home-section__text{
+  margin: 8px 0 0;
+  max-width: 860px;
+  line-height: 1.6;
+  color: rgba(241,245,255,.78);
+}
+
+/* grid */
+.home-grid-2{
+  display:grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.home-card{
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.05);
+  padding: 14px;
+  box-shadow: 0 16px 55px rgba(0,0,0,.35);
+}
+.home-card--inner{
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.10);
+}
+.home-link{ text-decoration:none; color: inherit; }
+
+/* poster 1:1 */
+.home-poster{
+  width:100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 16px;
+  overflow:hidden;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  position: relative;
+  margin-bottom: 12px;
+}
+.home-poster__shade{
+  position:absolute;
+  inset:0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.02) 35%, rgba(0,0,0,0.70) 100%);
+}
+.home-poster__text{
+  position:absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
+}
+.home-poster__title{
+  font-weight: 950;
+  font-size: 16px;
+  line-height: 1.1;
+}
+
+/* sticky */
+.home-sticky{
+  position: sticky;
+  top: calc(var(--nav-h) + 16px); /* ✅ respeta nav fijo */
+}
+
+/* grid auto */
+.home-grid-auto{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+/* responsive */
+@media (max-width: 980px){
+  .home-grid-2{ grid-template-columns: 1fr; }
+  .home-sticky{ position: relative; top: auto; }
+}
+
+/* ✅ desactivar pinned en móvil (más liviano) */
+@media (max-width: 900px){
+  .home-bleed{ height: auto; }
+  .home-hero{
+    position: relative;
+    top: auto;
+    height: auto;
+    min-height: 78vh;
+  }
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .home-bleed{ height: auto; }
+  .home-hero{ position: relative; top: auto; height: auto; min-height: 78vh; }
+  .home-hero__video,
+  .home-hero__build{
+    transition: none !important;
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+/* ===========================
+   HERO COPY TRANSITION — PRO GOD MODE (solo CSS)
+   Sin tocar TSX: usa solo .home-copy + --left/--right
+=========================== */
+
+.home-copy{
+  position: relative;
+  will-change: transform, opacity, filter;
+  transform-origin: 20% 60%;
+  isolation: isolate;                 /* mezcla limpia para efectos */
+  backface-visibility: hidden;
+
+  /* Depth */
+  text-shadow:
+    0 22px 70px rgba(0,0,0,.75),
+    0 10px 28px rgba(0,0,0,.45);
+
+  /* Animación base (se sobreescribe por left/right) */
+  animation: homeCopyInLeft .85s cubic-bezier(.18,.9,.12,1) both;
+}
+
+/* ✅ “Aura” suave detrás (no afecta layout) */
+.home-copy::before{
+  content:"";
+  position:absolute;
+  inset: -18px -26px -18px -26px;
+  z-index:-1;
+  pointer-events:none;
+
+  background:
+    radial-gradient(520px 320px at 18% 30%, rgba(254,80,0,.16), transparent 60%),
+    radial-gradient(560px 360px at 65% 55%, rgba(255,255,255,.06), transparent 62%),
+    radial-gradient(600px 340px at 30% 100%, rgba(254,0,62,.10), transparent 62%);
+  filter: blur(10px);
+  opacity: .95;
+}
+
+/* ✅ Shimmer / brillo finísimo que pasa por encima */
+.home-copy::after{
+  content:"";
+  position:absolute;
+  inset:-8px;
+  pointer-events:none;
+  z-index: 3;
+
+  background: linear-gradient(
+    110deg,
+    transparent 0%,
+    rgba(255,255,255,.08) 12%,
+    rgba(254,80,0,.12) 18%,
+    rgba(255,255,255,.06) 24%,
+    transparent 38%
+  );
+  mix-blend-mode: screen;
+  opacity: .85;
+
+  transform: translateX(-45%) skewX(-10deg);
+  animation: homeCopyShimmer 1.35s ease-out both;
+}
+
+@keyframes homeCopyShimmer{
+  0%   { opacity: 0; transform: translateX(-55%) skewX(-10deg); }
+  18%  { opacity: .85; }
+  65%  { opacity: .35; }
+  100% { opacity: 0; transform: translateX(55%) skewX(-10deg); }
+}
+
+/* -----------------------------------
+   DIRECCIÓN
+----------------------------------- */
+.home-copy--left{ animation-name: homeCopyInLeft; }
+.home-copy--right{ animation-name: homeCopyInRight; }
+
+/* -----------------------------------
+   ENTRADA + “SALIDA” SIMULADA
+   (sin TSX, lo hacemos en una sola animación)
+----------------------------------- */
+
+/* Entra desde izquierda, con “golpe” suave al final */
+@keyframes homeCopyInLeft{
+  /* (1) mini salida fantasma del estado anterior (simulada) */
+  0%{
+    opacity: 0;
+    transform: translateX(-26px) translateY(6px) scale(.985);
+    filter: blur(14px) saturate(.95);
+  }
+
+  /* (2) entra y aparece */
+  55%{
+    opacity: 1;
+    transform: translateX(0) translateY(0) scale(1);
+    filter: blur(0) saturate(1);
+  }
+
+  /* (3) impacto tipo “punch” (muy sutil) */
+  72%{ transform: translateX(0) translateY(0) scale(1.01); }
+  82%{ transform: translateX(0) translateY(0) scale(.997); }
+
+  /* (4) settle */
+  100%{
+    opacity: 1;
+    transform: translateX(0) translateY(0) scale(1);
+    filter: blur(0) saturate(1);
+  }
+}
+
+/* Entra desde derecha */
+@keyframes homeCopyInRight{
+  0%{
+    opacity: 0;
+    transform: translateX(26px) translateY(6px) scale(.985);
+    filter: blur(14px) saturate(.95);
+  }
+  55%{
+    opacity: 1;
+    transform: translateX(0) translateY(0) scale(1);
+    filter: blur(0) saturate(1);
+  }
+  72%{ transform: translateX(0) translateY(0) scale(1.01); }
+  82%{ transform: translateX(0) translateY(0) scale(.997); }
+  100%{
+    opacity: 1;
+    transform: translateX(0) translateY(0) scale(1);
+    filter: blur(0) saturate(1);
+  }
+}
+
+/* -----------------------------------
+   Extra: si el usuario pasa el mouse por encima,
+   el copy “respira” (muy leve)
+----------------------------------- */
+@media (hover: hover){
+  .home-copy:hover{
+    transform: translateY(-1px);
+    filter: saturate(1.05);
+  }
+}
+
+/* ✅ Reduced motion (accesibilidad) */
+@media (prefers-reduced-motion: reduce){
+  .home-copy{
+    animation: none !important;
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+  .home-copy::after{
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}

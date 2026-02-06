@@ -6,18 +6,22 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-| Aquí van solo rutas que devuelven vistas (SPA) o páginas.
-| NO pongas rutas /api aquí.
+| Solo rutas que devuelven vistas (SPA).
+| Importante: NO interceptar /api/*
 |--------------------------------------------------------------------------
 */
 
-// Si tu app es SPA (React), normalmente devuelves la misma vista
+// Home SPA (si tienes la vista app.blade.php)
 Route::get('/', fn () => view('app'));
 
-// Ruta especial (como la tenías)
+// Ruta especial SPA (tu attendance)
 Route::middleware(['auth:sanctum', 'role:attendance_controller|admin'])->group(function () {
     Route::get('/attendance', fn () => view('app'));
 });
 
-// SPA fallback: cualquier otra ruta -> la vista de tu app
-Route::get('/{any}', fn () => view('app'))->where('any', '.*');
+/**
+ * ✅ SPA fallback PERO sin tocar /api/*
+ * - Esto evita que /api/... caiga aquí.
+ */
+Route::get('/{any}', fn () => view('app'))
+    ->where('any', '^(?!api).*$');

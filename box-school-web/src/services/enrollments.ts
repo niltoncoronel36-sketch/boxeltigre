@@ -7,7 +7,6 @@ import type { Student } from "./students";
    ============================ */
 
 export type EnrollmentStatus = "active" | "paused" | "ended";
-
 export type PaymentMethod = "cash" | "card" | "yape" | "plin" | "transfer";
 
 export type Enrollment = {
@@ -20,7 +19,6 @@ export type Enrollment = {
 
   status: EnrollmentStatus;
 
-  // ✅ crédito (backend)
   billing_day?: number | null;
   plan_total_cents?: number | null;
   installments_count?: number | null;
@@ -29,11 +27,8 @@ export type Enrollment = {
   updated_at: string;
   deleted_at: string | null;
 
-  // Si backend hace ->with(['student','category'])
   student?: Pick<Student, "id" | "first_name" | "last_name" | "email" | "phone">;
-  category?: Pick<Category, "id" | "name" | "level"> & {
-    monthly_fee_cents?: number;
-  };
+  category?: Pick<Category, "id" | "name" | "level"> & { monthly_fee_cents?: number };
 };
 
 export type Paginator<T> = {
@@ -73,7 +68,7 @@ export type EnrollmentUpdatePayload = {
    ============================ */
 
 export async function listEnrollments(params: ListEnrollmentsParams): Promise<Paginator<Enrollment>> {
-  const res = await api.get<Paginator<Enrollment>>("/api/enrollments", {
+  const res = await api.get<Paginator<Enrollment>>("/enrollments", {
     params: {
       student_id: params.studentId,
       category_id: params.categoryId,
@@ -86,28 +81,28 @@ export async function listEnrollments(params: ListEnrollmentsParams): Promise<Pa
 }
 
 export async function createEnrollment(payload: EnrollmentCreatePayload): Promise<Enrollment> {
-  const res = await api.post<{ data: Enrollment }>("/api/enrollments", payload);
+  const res = await api.post<{ data: Enrollment }>("/enrollments", payload);
   return res.data.data;
 }
 
 export async function updateEnrollment(id: number, payload: EnrollmentUpdatePayload): Promise<Enrollment> {
-  const res = await api.put<{ data: Enrollment }>(`/api/enrollments/${id}`, payload);
+  const res = await api.put<{ data: Enrollment }>(`/enrollments/${id}`, payload);
   return res.data.data;
 }
 
 export async function deleteEnrollment(id: number): Promise<void> {
-  await api.delete(`/api/enrollments/${id}`);
+  await api.delete(`/enrollments/${id}`);
 }
 
 /* ============================
    CREDIT / CUOTAS
-   POST /api/enrollments/{id}/credit
+   POST /enrollments/{id}/credit
    ============================ */
 
 export type EnrollmentCreditPayload = {
-  plan_total_cents: number; // total del crédito (centavos)
-  installments_count: number; // cuotas
-  billing_day: number; // día del mes 1..28
+  plan_total_cents: number;
+  installments_count: number;
+  billing_day: number; // 1..28
 };
 
 export type ChargeStatus = "unpaid" | "partial" | "paid" | "void";
@@ -120,15 +115,14 @@ export type Charge = {
 
   concept: "installment" | "initial_payment" | string;
 
-  period_start: string; // YYYY-MM-DD
-  due_on: string; // YYYY-MM-DD
+  period_start: string;
+  due_on: string;
 
   amount_cents: number;
   paid_cents: number;
   status: ChargeStatus;
 
-  // ✅ (backend) cuando pagas
-  paid_on?: string | null; // YYYY-MM-DD (tu backend lo guarda así)
+  paid_on?: string | null;
   method?: PaymentMethod | null;
 
   created_at: string;
@@ -145,71 +139,52 @@ export async function saveEnrollmentCredit(
   enrollmentId: number,
   payload: EnrollmentCreditPayload
 ): Promise<SaveCreditResponse> {
-  const res = await api.post<{ data: SaveCreditResponse }>(
-    `/api/enrollments/${enrollmentId}/credit`,
-    payload
-  );
+  const res = await api.post<{ data: SaveCreditResponse }>(`/enrollments/${enrollmentId}/credit`, payload);
   return res.data.data;
 }
 
 /* ============================
    CUOTAS (LISTAR / PAGAR)
-   GET /api/enrollments/{id}/installments
-   POST /api/installments/{chargeId}/pay
+   GET /enrollments/{id}/installments
+   POST /installments/{chargeId}/pay
    ============================ */
 
 export async function listInstallments(enrollmentId: number): Promise<Charge[]> {
-  const res = await api.get<{ data: Charge[] }>(`/api/enrollments/${enrollmentId}/installments`);
+  const res = await api.get<{ data: Charge[] }>(`/enrollments/${enrollmentId}/installments`);
   return res.data.data;
 }
 
 export type PayInstallmentPayload = {
   method: PaymentMethod;
-  paid_on?: string; // YYYY-MM-DD
-  paid_cents?: number; // si no mandas, paga completo
+  paid_on?: string;
+  paid_cents?: number;
 };
 
-export async function payInstallment(
-  installmentChargeId: number,
-  payload: PayInstallmentPayload
-): Promise<Charge> {
-  const res = await api.post<{ data: Charge }>(`/api/installments/${installmentChargeId}/pay`, payload);
+export async function payInstallment(installmentChargeId: number, payload: PayInstallmentPayload): Promise<Charge> {
+  const res = await api.post<{ data: Charge }>(`/installments/${installmentChargeId}/pay`, payload);
   return res.data.data;
 }
 
 /* ============================
    PAGO INICIAL REAL
-   GET/POST /api/enrollments/{id}/initial-payment
+   GET/POST /enrollments/{id}/initial-payment
    ============================ */
 
-export type InitialPaymentResponse = Charge; // concept=initial_payment
+export type InitialPaymentResponse = Charge;
 
 export async function getInitialPayment(enrollmentId: number): Promise<InitialPaymentResponse> {
-  const res = await api.get<{ data: InitialPaymentResponse }>(`/api/enrollments/${enrollmentId}/initial-payment`);
+  const res = await api.get<{ data: InitialPaymentResponse }>(`/enrollments/${enrollmentId}/initial-payment`);
   return res.data.data;
 }
 
-/**
- * ✅ TS enforcing:
- * - si paid=true => method requerido
- * - si paid=false => method opcional (backend lo ignorará)
- */
 export type SaveInitialPaymentPayload =
-  | {
-      paid: true;
-      method: PaymentMethod;
-      paid_on?: string; // YYYY-MM-DD
-    }
-  | {
-      paid: false;
-      method?: PaymentMethod;
-      paid_on?: string; // YYYY-MM-DD
-    };
+  | { paid: true; method: PaymentMethod; paid_on?: string }
+  | { paid: false; method?: PaymentMethod; paid_on?: string };
 
 export async function saveInitialPayment(
   enrollmentId: number,
   payload: SaveInitialPaymentPayload
 ): Promise<InitialPaymentResponse> {
-  const res = await api.post<{ data: InitialPaymentResponse }>(`/api/enrollments/${enrollmentId}/initial-payment`, payload);
+  const res = await api.post<{ data: InitialPaymentResponse }>(`/enrollments/${enrollmentId}/initial-payment`, payload);
   return res.data.data;
 }

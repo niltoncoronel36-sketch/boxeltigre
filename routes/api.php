@@ -39,6 +39,9 @@ Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
 Route::post('/store/orders', [StoreOrderController::class, 'storePublic']);
 
+// ✅ ---------- PUBLIC SERVICES / MEMBERSHIPS (SOLO LECTURA) ----------
+Route::get('/public/categories', [CategoryController::class, 'publicIndex']);
+
 // ---------- AUTH PUBLIC ----------
 Route::post('/auth/login', [AuthController::class, 'login']);
 

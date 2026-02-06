@@ -1,18 +1,245 @@
-/* src/pages/Students/StudentsPage.css */
+/* =========================
+   StudentsPage PRO UI (LIGHT)
+   Paleta: blanco / negro / #FE003E
+========================= */
+
+:root{
+  --sp-bg: #f6f7fb;
+  --sp-bg2: #eef0f6;
+
+  --sp-card: rgba(255,255,255,.85);
+  --sp-card2: rgba(255,255,255,.65);
+
+  --sp-line: rgba(15, 23, 42, .10);
+  --sp-text: #0b0b10;
+  --sp-muted: rgba(15, 23, 42, .65);
+
+  --sp-accent: #FE003E;
+  --sp-accent2: rgba(254, 0, 62, .12);
+
+  --sp-radius: 18px;
+  --sp-radius-lg: 22px;
+  --sp-shadow: 0 18px 60px rgba(2, 6, 23, .12);
+}
 
 .students-page{
-  width: 100%;
+  min-height: 100vh;
+  padding: 28px 18px 44px;
+  color: var(--sp-text);
+  background:
+    radial-gradient(900px 520px at 14% 10%, rgba(254,0,62,.14), transparent 60%),
+    radial-gradient(860px 520px at 90% 15%, rgba(2,6,23,.06), transparent 62%),
+    linear-gradient(180deg, var(--sp-bg) 0%, var(--sp-bg2) 100%);
 }
 
 .students-page__inner{
+  width: min(1280px, 96vw);
+  margin: 0 auto;
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
-/* Si quieres un ancho máximo pro (como admin panel moderno) */
-@media (min-width: 1200px){
-  .students-page__inner{
-    max-width: 1200px;
-    margin: 0 auto;
-  }
+/* ---------- Header ---------- */
+.students-head{
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px;
+  border-radius: var(--sp-radius-lg);
+  background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.78));
+  border: 1px solid var(--sp-line);
+  box-shadow: var(--sp-shadow);
+}
+
+.students-kicker{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--sp-muted);
+  margin-bottom: 8px;
+}
+
+.students-title{
+  font-size: 28px;
+  margin: 0;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--sp-text);
+}
+
+.students-subtitle{
+  margin: 8px 0 0;
+  color: var(--sp-muted);
+  font-size: 14px;
+  max-width: 680px;
+}
+
+.students-head__right{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ---------- Card contenedor ---------- */
+.students-card{
+  border-radius: var(--sp-radius-lg);
+  background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.78));
+  border: 1px solid var(--sp-line);
+  box-shadow: var(--sp-shadow);
+  overflow: hidden;
+}
+
+/* ---------- Buttons (SOLIDOS) ---------- */
+.sp-btn{
+  border: 1px solid var(--sp-line);
+  background: #ffffff;
+  color: var(--sp-text);
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease, background .12s ease;
+  user-select: none;
+}
+
+.sp-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px rgba(2,6,23,.10);
+  filter: brightness(.98);
+}
+
+.sp-btn:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.sp-btn--ghost{
+  background: #ffffff;
+}
+
+.sp-btn--primary{
+  background: var(--sp-accent);     /* ✅ SOLIDO */
+  border-color: var(--sp-accent);
+  color: #fff;
+  box-shadow: 0 18px 50px rgba(254,0,62,.18);
+}
+
+.sp-btn--primary:hover{
+  background: #d90035;             /* hover sólido más oscuro */
+  border-color: #d90035;
+  box-shadow: 0 22px 70px rgba(254,0,62,.22);
+}
+
+.sp-btn--sm{
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 12px;
+}
+
+/* ---------- Overlay / Modal ---------- */
+.sp-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(2,6,23,.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  z-index: 80;
+}
+
+.sp-modal{
+  width: min(560px, 96vw);
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(15,23,42,.12);
+  box-shadow: 0 24px 90px rgba(2,6,23,.18);
+  padding: 16px;
+  color: var(--sp-text);
+}
+
+.sp-modal--wide{ width: min(720px, 96vw); }
+
+.sp-pill{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(2,6,23,.06);
+  border: 1px solid rgba(2,6,23,.10);
+  color: rgba(2,6,23,.75);
+}
+
+.sp-pill--success{
+  background: rgba(16,185,129,.10);
+  border-color: rgba(16,185,129,.18);
+  color: rgba(2,6,23,.85);
+}
+
+.sp-modal__subtitle{
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: rgba(15,23,42,.65);
+}
+
+.sp-info, .sp-creds__box{
+  background: rgba(2,6,23,.03);
+  border: 1px solid rgba(2,6,23,.10);
+}
+
+/* ---------- Toast ---------- */
+.sp-toast{
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 90;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(2,6,23,.12);
+  box-shadow: 0 18px 70px rgba(2,6,23,.14);
+}
+
+.sp-toast__msg{
+  font-size: 13px;
+  color: rgba(2,6,23,.85);
+  font-weight: 800;
+}
+
+.sp-toast__dot{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(2,6,23,.35);
+  box-shadow: 0 0 0 4px rgba(2,6,23,.08);
+}
+
+.sp-toast--success .sp-toast__dot{
+  background: rgba(16,185,129,.95);
+  box-shadow: 0 0 0 4px rgba(16,185,129,.16);
+}
+.sp-toast--error .sp-toast__dot{
+  background: rgba(254,0,62,.95);
+  box-shadow: 0 0 0 4px rgba(254,0,62,.16);
+}
+.sp-toast--info .sp-toast__dot{
+  background: rgba(59,130,246,.95);
+  box-shadow: 0 0 0 4px rgba(59,130,246,.16);
 }

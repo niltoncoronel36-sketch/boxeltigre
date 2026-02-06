@@ -74,7 +74,6 @@ export default function StorePage() {
       compare_at_price: "",
       product_category_id: "",
       is_active: true,
-
       total_stock: "0",
     });
     setImageFile(null);
@@ -97,9 +96,9 @@ export default function StorePage() {
     setLoading(true);
     try {
       const [catRes, prodRes] = await Promise.all([
-        api.get("/api/product-categories"),
-        api.get("/api/products", { params: { per_page: 200, include_inactive: 1 } })
-
+        // ✅ SIN /api (baseURL ya tiene /api)
+        api.get("/product-categories"),
+        api.get("/products", { params: { per_page: 200, include_inactive: 1 } }),
       ]);
 
       const categories = Array.isArray(catRes.data?.data) ? catRes.data.data : [];
@@ -195,12 +194,12 @@ export default function StorePage() {
       fd.append("name", name);
       fd.append("brand", (form.brand || "El Tigre").trim());
       fd.append("price", String(Number(form.price || 0)));
-      if (form.compare_at_price) fd.append("compare_at_price", String(Number(form.compare_at_price)));
+      if (form.compare_at_price)
+        fd.append("compare_at_price", String(Number(form.compare_at_price)));
       if (form.product_category_id) fd.append("product_category_id", form.product_category_id);
       fd.append("is_active", form.is_active ? "1" : "0");
 
       // ✅ NUEVO: stock total
-      // (si tu backend espera otro nombre, aquí lo cambiamos)
       fd.append("total_stock", String(Math.max(0, Number(form.total_stock || 0))));
 
       // foto opcional
@@ -208,11 +207,13 @@ export default function StorePage() {
 
       if (form.id) {
         fd.append("_method", "PUT");
-        await api.post(`/api/products/${form.id}`, fd, {
+        // ✅ SIN /api
+        await api.post(`/products/${form.id}`, fd, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       } else {
-        await api.post(`/api/products`, fd, {
+        // ✅ SIN /api
+        await api.post(`/products`, fd, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       }
@@ -231,7 +232,8 @@ export default function StorePage() {
     setError(null);
 
     try {
-      await api.delete(`/api/products/${p.id}`);
+      // ✅ SIN /api
+      await api.delete(`/products/${p.id}`);
       await loadAll();
     } catch {
       setError("No se pudo eliminar (verifica endpoint admin y permisos).");

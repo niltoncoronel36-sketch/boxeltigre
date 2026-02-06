@@ -19,7 +19,7 @@ export function StudentsTable(props: {
   onSearchChange: (v: string) => void;
   onActiveChange: (v: "1" | "0" | "") => void;
 
-  onOpenCreate: () => void;
+  onOpenCreate: () => void; // (lo dejamos por compatibilidad, pero ya no se usa aquí)
   onRowClick: (s: Student) => void;
 
   onPrev: () => void;
@@ -39,7 +39,6 @@ export function StudentsTable(props: {
     active,
     onSearchChange,
     onActiveChange,
-    onOpenCreate,
     onRowClick,
     onPrev,
     onNext,
@@ -47,71 +46,88 @@ export function StudentsTable(props: {
     creatingUserStudentId,
   } = props;
 
+  const resultsLabel = loading
+    ? "Cargando…"
+    : `${items.length} de ${total} resultado${total === 1 ? "" : "s"}`;
+
   return (
-    <div className="card st-card">
-      {/* Header */}
-      <div className="st-head">
-        <div className="st-head__left">
-          <div className="st-title">Estudiantes</div>
+    <div className="st-cardPro">
+      {/* Top bar */}
+      <div className="st-top">
+        <div className="st-top__left">
+          <div className="st-title">Listado de alumnos</div>
           <div className="st-sub">
-            Total: <b>{total}</b> • Tip: click en un alumno para ver detalle
+            <span className="st-pill">{resultsLabel}</span>
+            <span className="st-hint">Tip: click en un alumno para ver el perfil</span>
           </div>
         </div>
 
-        <button className="btn btn-primary st-new" onClick={onOpenCreate} disabled={loading} type="button">
-          + Nuevo
-        </button>
+        <div className="st-top__right">
+          <span className={`st-dot ${loading ? "is-on" : ""}`} title={loading ? "Actualizando" : "Listo"} />
+        </div>
       </div>
 
       {/* Toolbar */}
-      <div className="st-toolbar">
-        <div className="st-search">
+      <div className="st-toolbarPro">
+        <div className="st-searchPro">
+          <span className="st-searchIcon" aria-hidden="true">
+            ⌕
+          </span>
           <input
-            className="input st-input"
-            placeholder="Buscar: nombre, doc, email, phone..."
+            className="st-inputPro"
+            placeholder="Buscar por nombre, DNI, correo o teléfono…"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
           />
+          {search ? (
+            <button className="st-clear" type="button" onClick={() => onSearchChange("")} title="Limpiar">
+              ✕
+            </button>
+          ) : null}
         </div>
 
-        <select className="input st-input st-select" value={active} onChange={(e) => onActiveChange(e.target.value as any)}>
-          <option value="1">Activos</option>
-          <option value="">Todos</option>
-          <option value="0">Inactivos</option>
-        </select>
+        <div className="st-filtersPro">
+          <select
+            className="st-selectPro"
+            value={active}
+            onChange={(e) => onActiveChange(e.target.value as any)}
+            title="Filtrar por estado"
+          >
+            <option value="1">Activos</option>
+            <option value="">Todos</option>
+            <option value="0">Inactivos</option>
+          </select>
+        </div>
       </div>
 
-      {err ? (
-        <div className="err st-err">
-          {err}
-        </div>
-      ) : null}
+      {err ? <div className="st-errPro">{err}</div> : null}
 
       {/* Table */}
-      <div className="st-tableWrap" role="region" aria-label="Tabla de estudiantes">
-        <table className="st-table">
+      <div className="st-tableWrapPro" role="region" aria-label="Tabla de estudiantes">
+        <table className="st-tablePro">
           <thead>
             <tr>
-              <th>Nombre</th>
+              <th>Alumno</th>
               <th>Edad</th>
               <th>Documento</th>
               <th>Contacto</th>
               <th>Estado</th>
-              <th>Usuario</th>
+              <th className="st-thRight">Usuario</th>
             </tr>
           </thead>
 
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} className="st-empty">
-                  Cargando...
+                <td colSpan={6} className="st-emptyPro">
+                  <span className="st-skelLine" />
+                  <span className="st-skelLine st-skelLine--sm" />
                 </td>
               </tr>
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={6} className="st-empty">
-                  No hay estudiantes.
+                <td colSpan={6} className="st-emptyPro">
+                  No hay alumnos para mostrar.
                 </td>
               </tr>
             ) : (
@@ -120,12 +136,30 @@ export function StudentsTable(props: {
                 const dni = String((s as any).document_number ?? "").trim();
 
                 return (
-                  <tr key={s.id} className="st-row" onClick={() => onRowClick(s)} role="button" tabIndex={0}>
+                  <tr
+                    key={s.id}
+                    className="st-rowPro"
+                    onClick={() => onRowClick(s)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") onRowClick(s);
+                    }}
+                  >
                     <td>
-                      <div className="st-name">{formatName(s)}</div>
-                      <div className="st-muted">
-                        ID: <span className="mono">{s.id}</span>
-                        {s.email ? <span> • {s.email}</span> : null}
+                      <div className="st-userCell">
+                        <div className="st-avatar" aria-hidden="true">
+                          {String(s.first_name?.[0] ?? "A").toUpperCase()}
+                          {String(s.last_name?.[0] ?? "L").toUpperCase()}
+                        </div>
+
+                        <div className="st-userMeta">
+                          <div className="st-name">{formatName(s)}</div>
+                          <div className="st-muted">
+                            ID: <span className="st-mono">{s.id}</span>
+                            {s.email ? <span> • {s.email}</span> : null}
+                          </div>
+                        </div>
                       </div>
                     </td>
 
@@ -148,25 +182,33 @@ export function StudentsTable(props: {
                     </td>
 
                     <td>
-                      <span className={`st-badge ${s.is_active ? "is-active" : "is-inactive"}`}>
+                      <span className={`st-badgePro ${s.is_active ? "is-active" : "is-inactive"}`}>
                         {s.is_active ? "Activo" : "Inactivo"}
                       </span>
                     </td>
 
-                    <td onClick={(e) => e.stopPropagation()}>
+                    <td className="st-tdRight" onClick={(e) => e.stopPropagation()}>
                       {hasUser ? (
-                        <span className="st-badge is-user" title="Usuario creado">
+                        <span className="st-userBadge" title="Usuario creado">
+                          <span className="st-userBadge__dot" />
                           {dni || "Creado"}
                         </span>
                       ) : (
                         <button
-                          className="btn btn-primary st-btnTiny"
+                          className="st-actionBtn"
                           type="button"
                           onClick={() => onCreateUser(s)}
                           disabled={creatingUserStudentId === s.id || !dni}
-                          title={!dni ? "Este alumno no tiene DNI para crear usuario" : "Crea usuario y contraseña = DNI"}
+                          title={!dni ? "Este alumno no tiene DNI para crear usuario" : "Usuario y contraseña = DNI"}
                         >
-                          {creatingUserStudentId === s.id ? "Creando..." : "Crear usuario"}
+                          {creatingUserStudentId === s.id ? (
+                            <>
+                              <span className="st-spinner" aria-hidden="true" />
+                              Creando…
+                            </>
+                          ) : (
+                            "Crear usuario"
+                          )}
                         </button>
                       )}
                     </td>
@@ -179,16 +221,16 @@ export function StudentsTable(props: {
       </div>
 
       {/* Footer / Pagination */}
-      <div className="st-foot">
-        <div className="st-foot__left">
+      <div className="st-footPro">
+        <div className="st-footPro__left">
           Página <b>{page}</b> de <b>{lastPage}</b>
         </div>
 
-        <div className="st-foot__right">
-          <button className="btn st-pgBtn" onClick={onPrev} disabled={loading || page <= 1} type="button">
+        <div className="st-footPro__right">
+          <button className="st-pgBtnPro" onClick={onPrev} disabled={loading || page <= 1} type="button">
             ← Anterior
           </button>
-          <button className="btn st-pgBtn" onClick={onNext} disabled={loading || page >= lastPage} type="button">
+          <button className="st-pgBtnPro" onClick={onNext} disabled={loading || page >= lastPage} type="button">
             Siguiente →
           </button>
         </div>

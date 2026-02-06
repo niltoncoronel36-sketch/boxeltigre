@@ -27,7 +27,7 @@ export type Paginated<T> = {
 
 export async function scanAttendance(dni: string) {
   const clean = String(dni ?? "").trim().replace(/\s+/g, "");
-  const { data } = await api.post<AttendanceScanResponse>("/api/attendance/scan", { dni: clean });
+  const { data } = await api.post<AttendanceScanResponse>("/attendance/scan", { dni: clean });
   return data;
 }
 
@@ -36,22 +36,17 @@ export async function getTodayAttendances(params?: { search?: string; page?: num
     success: boolean;
     message: string;
     data: Paginated<AttendanceTodayItem>;
-  }>("/api/attendance/today", { params });
+  }>("/attendance/today", { params });
 
   return data;
 }
 
-export async function getAttendanceHistory(params?: {
-  search?: string;
-  from?: string;
-  to?: string;
-  page?: number;
-}) {
+export async function getAttendanceHistory(params?: { search?: string; from?: string; to?: string; page?: number }) {
   const { data } = await api.get<{
     success: boolean;
     message: string;
     data: Paginated<AttendanceTodayItem>;
-  }>("/api/attendance/history", { params });
+  }>("/attendance/history", { params });
 
   return data;
 }
@@ -67,9 +62,6 @@ export type StudentAttendanceItem = {
 };
 
 export async function getMyAttendance() {
-  const { data } = await api.get<{
-    data: StudentAttendanceItem[];
-  }>("/api/student/attendance");
-
+  const { data } = await api.get<{ data: StudentAttendanceItem[] }>("/student/attendance");
   return data.data;
 }

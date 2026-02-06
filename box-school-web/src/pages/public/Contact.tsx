@@ -103,7 +103,7 @@ export default function PublicContact() {
           </p>
 
           <ul className="pub-contact-list">
-            <li>📍 Estamos a <b>dos cuadras del Parque Constitución</b>.</li>
+            <li>📍 Estamos a <b>A Unos Pasos del Parque Constitución</b>.</li>
             <li>🚌 Cerca de rutas principales y zonas conocidas de Huancayo.</li>
             <li>🏷️ Busca en Google: <b>“Club de Box El Tigre”</b>.</li>
           </ul>

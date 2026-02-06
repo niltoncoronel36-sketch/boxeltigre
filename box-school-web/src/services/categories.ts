@@ -32,7 +32,7 @@ export type ListCategoriesParams = {
 };
 
 export async function listCategories(params: ListCategoriesParams): Promise<Paginator<Category>> {
-  const res = await api.get<Paginator<Category>>("/api/categories", {
+  const res = await api.get<Paginator<Category>>("/categories", {
     params: {
       search: params.search || "",
       active: params.active ?? "1",

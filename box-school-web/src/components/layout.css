@@ -1,35 +1,56 @@
+/* src/components/layout.css */
+/* ✅ Layout BACK (panel) - LIGHT (blanco) + detalles negro/rojo (#FE003E) + responsive estable */
+
+/* =========================
+   THEME (Light)
+========================= */
 :root{
-  --bg: #0b0f19;
-  --panel: rgba(255,255,255,0.06);
-  --panel-2: rgba(255,255,255,0.10);
-  --text: rgba(255,255,255,0.92);
-  --muted: rgba(255,255,255,0.68);
-  --line: rgba(255,255,255,0.10);
+  /* Base claro */
+  --bg:#f6f7f9;
+  --panel:#ffffff;
+  --panel-2:#f3f4f6;
+  --text:rgba(10,10,10,.92);
+  --muted:rgba(10,10,10,.60);
+  --line:rgba(10,10,10,.10);
 
-  --primary: #ff6a00;
-  --primary-2: rgba(255,106,0,0.22);
+  /* Marca (COOKING GOURMET) */
+  --primary:#FE003E;
+  --primary-2:rgba(254,0,62,.18);
 
-  --radius: 14px;
+  --radius:16px;
 
-  --sidebar-collapsed: 100px;
-  --sidebar-expanded: 260px;
+  --sidebar-collapsed:100px;
+  --sidebar-expanded:260px;
+
+  --shadow: 0 18px 60px rgba(0,0,0,.10);
+  --shadow2: 0 10px 26px rgba(0,0,0,.08);
 }
 
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
+html, body { overflow-x: hidden; }
+
 body{
   margin:0;
-  background: linear-gradient(180deg, #070a12 0%, #0b0f19 100%);
+  background:
+    radial-gradient(900px 520px at 20% 15%, rgba(254,0,62,.10), transparent 60%),
+    radial-gradient(900px 520px at 80% 65%, rgba(0,0,0,.05), transparent 60%),
+    linear-gradient(180deg, #f6f7f9 0%, #ffffff 55%, #f6f7f9 100%);
   color: var(--text);
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
 }
 
+/* =========================
+   APP SHELL
+========================= */
 .app-shell{
   min-height:100vh;
   display:flex;
 }
 
-/* SIDEBAR */
+/* =========================
+   SIDEBAR (Desktop)
+========================= */
 .sidebar{
   width: var(--sidebar-collapsed);
   min-height:100vh;
@@ -41,17 +62,18 @@ body{
   gap:14px;
 
   padding:14px;
-  background: rgba(10,14,24,0.72);
+  background: rgba(255,255,255,.82);
   backdrop-filter: blur(14px);
   border-right: 1px solid var(--line);
+  box-shadow: 12px 0 40px rgba(0,0,0,.06);
 
   transition: width .22s ease;
   overflow: hidden;
 }
 
-/* EXPAND ON HOVER */
-.sidebar:hover{
-  width: var(--sidebar-expanded);
+/* EXPAND ON HOVER (solo desktop con hover real) */
+@media (hover: hover) and (pointer: fine){
+  .sidebar:hover{ width: var(--sidebar-expanded); }
 }
 
 /* Brand */
@@ -61,7 +83,7 @@ body{
   gap:12px;
   padding:10px;
   border-radius: var(--radius);
-  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.015));
   border: 1px solid var(--line);
 }
 
@@ -70,34 +92,32 @@ body{
   height:42px;
   display:grid;
   place-items:center;
-  border-radius: 12px;
-  background: radial-gradient(circle at 30% 30%, var(--primary-2), rgba(255,255,255,0.06));
-  border: 1px solid rgba(255,106,0,0.25);
-  color: var(--text);
+  border-radius: 14px;
+  background: radial-gradient(circle at 30% 30%, rgba(254,0,62,.22), rgba(0,0,0,.02));
+  border: 1px solid rgba(254,0,62,.30);
+  color: rgba(0,0,0,.90);
   flex: 0 0 auto;
 }
 
-.brand-info{
-  min-width:0;
-}
-
+.brand-info{ min-width:0; }
 .brand-title{
-  font-weight: 700;
+  font-weight: 900;
   letter-spacing: .2px;
   white-space: nowrap;
   overflow:hidden;
   text-overflow: ellipsis;
+  color: rgba(0,0,0,.92);
 }
-
 .brand-sub{
   font-size: 12px;
   color: var(--muted);
 }
 
 .accent-line{
-  height:1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,106,0,0.55) 50%, transparent 100%);
-  opacity: .9;
+  height:3px;
+  border-radius:999px;
+  background: linear-gradient(90deg, var(--primary), rgba(0,0,0,.25));
+  opacity: .95;
   margin: 2px 6px 0;
 }
 
@@ -117,8 +137,8 @@ body{
   width:100%;
   padding:10px 12px;
 
-  border-radius: 12px;
-  color: var(--muted);
+  border-radius: 14px;
+  color: rgba(0,0,0,.70);
   text-decoration:none;
 
   border: 1px solid transparent;
@@ -129,20 +149,18 @@ body{
 }
 
 .nav-link:hover{
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.10);
-  color: var(--text);
+  background: rgba(254,0,62,.07);
+  border-color: rgba(254,0,62,.22);
+  color: rgba(0,0,0,.92);
 }
 
-.nav-link:active{
-  transform: translateY(1px);
-}
+.nav-link:active{ transform: translateY(1px); }
 
 .nav-link.active{
-  color: var(--text);
-  background: linear-gradient(90deg, rgba(255,106,0,0.18), rgba(255,255,255,0.05));
-  border-color: rgba(255,106,0,0.30);
-  box-shadow: 0 0 0 1px rgba(255,106,0,0.10) inset;
+  color: rgba(0,0,0,.92);
+  background: linear-gradient(90deg, rgba(254,0,62,.18), rgba(0,0,0,.02));
+  border-color: rgba(254,0,62,.35);
+  box-shadow: 0 0 0 1px rgba(254,0,62,.10) inset;
 }
 
 .icon{
@@ -150,11 +168,18 @@ body{
   height: 34px;
   display:grid;
   place-items:center;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.10);
-  color: currentColor;
+  border-radius: 12px;
+  background: rgba(0,0,0,.04);
+  border: 1px solid rgba(0,0,0,.10);
+  color: rgba(0,0,0,.82);
   flex: 0 0 auto;
+}
+
+/* icon más “marca” cuando está active */
+.nav-link.active .icon{
+  background: radial-gradient(circle at 30% 30%, rgba(254,0,62,.26), rgba(0,0,0,.03));
+  border-color: rgba(254,0,62,.28);
+  color: rgba(0,0,0,.92);
 }
 
 .nav-text{
@@ -169,14 +194,6 @@ body{
 }
 
 /* show text when expanded (hover) */
-.sidebar:hover .nav-text,
-.sidebar:hover .brand-info,
-.sidebar:hover .btn-web-text{
-  opacity: 1;
-  max-width: 220px;
-  transform: translateX(0);
-}
-
 .brand-info,
 .btn-web-text{
   opacity: 0;
@@ -187,27 +204,75 @@ body{
   transform: translateX(-6px);
 }
 
-/* When collapsed: center items */
-.sidebar:not(:hover) .nav-link{
-  justify-content: center;
-  padding-left: 10px;
-  padding-right: 10px;
+@media (hover: hover) and (pointer: fine){
+  .sidebar:hover .nav-text,
+  .sidebar:hover .brand-info,
+  .sidebar:hover .btn-web-text{
+    opacity: 1;
+    max-width: 220px;
+    transform: translateX(0);
+  }
 }
 
-.sidebar:not(:hover) .nav-link .arrow{
-  display:none;
+/* When collapsed: center items (desktop) + caja cuadrada */
+@media (hover: hover) and (pointer: fine){
+  .sidebar:not(:hover) .nav{
+    align-items: center;
+  }
+
+  .sidebar:not(:hover) .nav-link{
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border-radius: 14px;
+
+    justify-content: center;
+    align-self: center;
+
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    box-shadow: none !important;
+  }
+
+  .sidebar:not(:hover) .nav-link:hover{
+    background: transparent !important;
+    border-color: transparent !important;
+  }
+
+  .sidebar:not(:hover) .nav-link .icon{
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: rgba(0,0,0,.04);
+    border: 1px solid rgba(0,0,0,.12);
+  }
+
+  .sidebar:not(:hover) .nav-link:hover .icon{
+    background: rgba(0,0,0,.06);
+    border-color: rgba(0,0,0,.16);
+  }
+
+  .sidebar:not(:hover) .nav-link.active{
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .sidebar:not(:hover) .nav-link.active .icon{
+    background: linear-gradient(180deg, rgba(254,0,62,.30), rgba(254,0,62,.12));
+    border-color: rgba(254,0,62,.38);
+    box-shadow: 0 0 0 1px rgba(254,0,62,.10) inset;
+  }
+
+  .sidebar:not(:hover) .arrow{ display: none !important; }
+  .sidebar:not(:hover) .sub-nav{ display: none !important; }
 }
 
 /* Group / sub-nav */
-.nav-group{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-}
-
-.nav-dropdown-btn{
-  background: transparent;
-}
+.nav-group{ display:flex; flex-direction:column; gap:6px; }
+.nav-dropdown-btn{ background: transparent; }
 
 .arrow{
   margin-left:auto;
@@ -217,15 +282,14 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
+  color: rgba(0,0,0,.60);
 }
 
-.sidebar:hover .arrow{
-  opacity: 1;
+@media (hover: hover) and (pointer: fine){
+  .sidebar:hover .arrow{ opacity: 1; }
 }
 
-.arrow.up{
-  transform: rotate(180deg);
-}
+.arrow.up{ transform: rotate(180deg); }
 
 .sub-nav{
   display:none;
@@ -233,20 +297,9 @@ body{
   gap:6px;
   padding-left: 8px;
 }
-
-.sub-nav.show{
-  display:flex;
-}
-
-.sub-nav .nav-link{
-  padding: 9px 10px;
-}
-
-.sub-nav .icon{
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-}
+.sub-nav.show{ display:flex; }
+.sub-nav .nav-link{ padding: 9px 10px; }
+.sub-nav .icon{ width: 32px; height: 32px; border-radius: 12px; }
 
 /* FOOTER */
 .sidebar-footer{
@@ -264,29 +317,30 @@ body{
   gap:12px;
   padding:10px;
   border-radius: var(--radius);
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,.03);
+  border: 1px solid rgba(0,0,0,.08);
 }
 
 .user-avatar{
   width:38px;
   height:38px;
-  border-radius: 12px;
+  border-radius: 14px;
   display:grid;
   place-items:center;
-  font-weight: 800;
-  background: radial-gradient(circle at 30% 30%, rgba(255,106,0,0.35), rgba(255,255,255,0.06));
-  border: 1px solid rgba(255,106,0,0.25);
+  font-weight: 900;
+  background: radial-gradient(circle at 30% 30%, rgba(254,0,62,.24), rgba(0,0,0,.02));
+  border: 1px solid rgba(254,0,62,.26);
+  color: rgba(0,0,0,.92);
 }
 
 .user-name{
-  font-weight: 700;
+  font-weight: 900;
   font-size: 13px;
   white-space: nowrap;
   overflow:hidden;
   text-overflow: ellipsis;
+  color: rgba(0,0,0,.90);
 }
-
 .user-email{
   font-size: 12px;
   color: var(--muted);
@@ -300,27 +354,30 @@ body{
   align-items:center;
   gap:10px;
   padding:10px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.06);
-  color: var(--text);
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(255,255,255,.92);
+  color: rgba(0,0,0,.88);
   cursor:pointer;
   text-decoration:none;
-  transition: background .15s ease, border-color .15s ease, transform .10s ease;
+  transition: background .15s ease, border-color .15s ease, transform .10s ease, box-shadow .15s ease;
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
 }
 
 .btn:hover{
-  background: rgba(255,255,255,0.10);
-  border-color: rgba(255,255,255,0.14);
+  background: rgba(254,0,62,.08);
+  border-color: rgba(254,0,62,.26);
+  box-shadow: 0 10px 22px rgba(0,0,0,.08);
 }
 
-.btn:active{
-  transform: translateY(1px);
-}
+.btn:active{ transform: translateY(1px); }
 
 .btn-primary{
-  background: linear-gradient(90deg, rgba(255,106,0,0.22), rgba(255,255,255,0.06));
-  border-color: rgba(255,106,0,0.30);
+  background: linear-gradient(90deg, rgba(254,0,62,.98), rgba(254,0,62,.60));
+  border-color: rgba(254,0,62,.45);
+  color: #0b0f19;
+  font-weight: 900;
+  box-shadow: 0 18px 40px rgba(254,0,62,.22);
 }
 
 .btn-logout{
@@ -328,11 +385,13 @@ body{
   justify-content:center;
 }
 
-.sidebar:hover .btn-logout{
-  justify-content:flex-start;
+@media (hover: hover) and (pointer: fine){
+  .sidebar:hover .btn-logout{ justify-content:flex-start; }
 }
 
-/* MAIN */
+/* =========================
+   MAIN
+========================= */
 .main{
   flex:1;
   display:flex;
@@ -349,13 +408,14 @@ body{
 
   padding: 0 18px;
   border-bottom: 1px solid var(--line);
-  background: rgba(10,14,24,0.55);
+  background: rgba(255,255,255,.70);
   backdrop-filter: blur(14px);
 }
 
 .topbar-title{
-  font-weight: 800;
+  font-weight: 950;
   letter-spacing: .2px;
+  color: rgba(0,0,0,.92);
 }
 
 .topbar-actions{
@@ -373,235 +433,66 @@ body{
 .role-badge{
   padding: 8px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(0,0,0,.03);
   font-size: 12px;
-  color: var(--muted);
+  color: rgba(0,0,0,.70);
+  font-weight: 900;
 }
 
 .content{
   padding: 18px;
   min-width:0;
 }
-/* =========================================================
-   ✅ FIX DEFINITIVO: Desktop colapsado vs Mobile sin hover
-   PÉGALO AL FINAL (o reemplaza tus fixes por este)
-========================================================= */
-
-html, body { overflow-x: hidden; }
-
-/* ---------- 1) Desktop / laptops (hay hover real) ---------- */
-@media (hover: hover) and (pointer: fine) {
-
-  /* centra los items cuando está colapsado */
-  .sidebar:not(:hover) .nav{
-    align-items: center;
-  }
-
-  /* link NO píldora, se vuelve “caja” */
-  .sidebar:not(:hover) .nav-link{
-    width: 52px;
-    height: 52px;
-    padding: 0;
-    border-radius: 14px;
-
-    justify-content: center;
-    align-self: center;
-
-    background: transparent !important;
-    border: 1px solid transparent !important;
-    box-shadow: none !important;
-  }
-
-  /* en colapsado NO pintes el fondo en el contenedor */
-  .sidebar:not(:hover) .nav-link:hover{
-    background: transparent !important;
-    border-color: transparent !important;
-  }
-
-  /* el cuadrado visible es el .icon */
-  .sidebar:not(:hover) .nav-link .icon{
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-
-    display: grid;
-    place-items: center;
-
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
-  }
-
-  /* hover: resalta el cuadrado */
-  .sidebar:not(:hover) .nav-link:hover .icon{
-    background: rgba(255,255,255,0.10);
-    border-color: rgba(255,255,255,0.18);
-  }
-
-  /* active: resalta el cuadrado (no píldora) */
-  .sidebar:not(:hover) .nav-link.active{
-    background: transparent !important;
-    border-color: transparent !important;
-    box-shadow: none !important;
-  }
-
-  .sidebar:not(:hover) .nav-link.active .icon{
-    background: linear-gradient(
-      180deg,
-      rgba(255,106,0,0.38),
-      rgba(255,106,0,0.14)
-    );
-    border-color: rgba(255,106,0,0.38);
-    box-shadow: 0 0 0 1px rgba(255,106,0,0.10) inset;
-  }
-
-  /* colapsado: no flechas ni subnav */
-  .sidebar:not(:hover) .arrow{ display: none !important; }
-  .sidebar:not(:hover) .sub-nav{ display: none !important; }
-}
-
-/* ---------- 2) Mobile / tablet táctil (NO hover) ---------- */
-@media (hover: none) and (pointer: coarse) {
-
-  .app-shell{
-    flex-direction: column;
-    min-height: 100vh;
-  }
-
-  /* Sidebar => bottom bar */
-  .sidebar{
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: auto;
-
-    width: 100% !important;
-    min-height: auto;
-    height: 74px;
-
-    padding: 10px 10px 12px;
-    border-right: none;
-    border-top: 1px solid var(--line);
-
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
-
-    z-index: 50;
-    overflow: hidden;
-
-    /* anula comportamientos de desktop */
-    transition: none !important;
-  }
-
-  /* Desactiva “expand on hover” */
-  .sidebar:hover{ width: 100% !important; }
-
-  /* Oculta marca y footer */
-  .brand,
-  .accent-line,
-  .sidebar-footer{ display: none !important; }
-
-  /* Nav horizontal */
-  .nav{
-    flex: 1;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-around;
-
-    gap: 8px;
-    padding: 0;
-    margin: 0;
-
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* IMPORTANTÍSIMO: anula el modo “colapsado” en mobile */
-  .sidebar:not(:hover) .nav-link{
-    width: 56px !important;
-    height: 56px !important;
-    padding: 0 !important;
-    border-radius: 14px !important;
-
-    background: transparent !important;
-    border: 1px solid transparent !important;
-    box-shadow: none !important;
-    justify-content: center !important;
-  }
-
-  .sidebar:not(:hover) .nav-link .icon{
-    width: 52px !important;
-    height: 52px !important;
-    border-radius: 14px !important;
-    background: rgba(255,255,255,0.06) !important;
-    border: 1px solid rgba(255,255,255,0.12) !important;
-  }
-
-  /* Active en mobile */
-  .nav-link.active .icon{
-    background: linear-gradient(
-      180deg,
-      rgba(255,106,0,0.38),
-      rgba(255,106,0,0.14)
-    ) !important;
-    border-color: rgba(255,106,0,0.38) !important;
-  }
-
-  /* sin textos / flechas / subnav */
-  .nav-text,
-  .brand-info,
-  .btn-web-text,
-  .arrow,
-  .sub-nav{ display: none !important; }
-
-  /* Main: espacio para la barra inferior */
-  .main{
-    width: 100%;
-    padding-bottom: 84px;
-  }
-
-  .topbar{
-    height: auto;
-    padding: 12px;
-    flex-wrap: wrap;
-  }
-
-  .topbar-actions{
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .content{
-    padding: 12px;
-  }
-}
-
-/* Pantallas angostas generales */
-@media (max-width: 900px){
-  .content{ padding: 12px; }
-}
-
-
 
 /* =========================
-   ✅ RESPONSIVE: SIDEBAR A UN COSTADO (LEFT)
-   PÉGALO AL FINAL
+   PANEL UI HELPERS
 ========================= */
+.input{
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(255,255,255,.96);
+  color: rgba(0,0,0,.88);
+  outline: none;
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
+}
 
+.input::placeholder{ color: rgba(0,0,0,.45); }
+
+.input:focus{
+  border-color: rgba(254,0,62,.45);
+  box-shadow: 0 0 0 4px rgba(254,0,62,.14);
+}
+
+.err{
+  border: 1px solid rgba(254,0,62,.22);
+  background: rgba(254,0,62,.08);
+  color: rgba(120,0,0,.92);
+  padding: 12px;
+  border-radius: 14px;
+  font-weight: 900;
+}
+
+table{ color: rgba(0,0,0,.86); }
+th{ color: rgba(0,0,0,.70); }
+td{ color: rgba(0,0,0,.82); }
+
+.title{ color: rgba(0,0,0,.92); font-weight: 950; }
+.subtitle, .muted{ color: rgba(0,0,0,.60); }
+
+/* =========================
+   RESPONSIVE (Mobile/Tablet)
+   ✅ sidebar fijo a la izquierda
+========================= */
 @media (max-width: 900px) {
 
-  /* Mantén layout en fila (sidebar izquierda + main) */
   .app-shell{
     flex-direction: row !important;
     min-height: 100vh;
   }
 
-  /* Sidebar fijo a la izquierda */
   .sidebar{
     position: fixed !important;
     left: 0;
@@ -609,13 +500,12 @@ html, body { overflow-x: hidden; }
     bottom: 0;
     right: auto;
 
-    width: 78px !important;      /* colapsado en móvil */
+    width: 78px !important;
     min-height: 100vh !important;
     height: 100vh !important;
 
     padding: 12px !important;
     border-right: 1px solid var(--line) !important;
-    border-top: none !important;
 
     flex-direction: column !important;
     align-items: stretch !important;
@@ -625,19 +515,17 @@ html, body { overflow-x: hidden; }
     z-index: 60 !important;
   }
 
-  /* Desactiva el “expand on hover” (en táctil no sirve) */
-  .sidebar:hover{
-    width: 78px !important;
-  }
+  /* No hover expand en móvil */
+  .sidebar:hover{ width: 78px !important; }
 
-  /* Oculta marca y footer si quieres ahorrar espacio */
+  /* Oculta marca y footer para ahorrar espacio */
   .brand,
   .accent-line,
   .sidebar-footer{
     display: none !important;
   }
 
-  /* Nav vertical normal */
+  /* Nav vertical */
   .nav{
     display: flex !important;
     flex-direction: column !important;
@@ -649,7 +537,6 @@ html, body { overflow-x: hidden; }
     overflow: hidden !important;
   }
 
-  /* Botones cuadrados */
   .nav-link{
     width: 56px !important;
     height: 56px !important;
@@ -664,7 +551,6 @@ html, body { overflow-x: hidden; }
     border-radius: 14px !important;
   }
 
-  /* Sin textos / flechas / subnav en móvil */
   .nav-text,
   .brand-info,
   .btn-web-text,
@@ -673,64 +559,83 @@ html, body { overflow-x: hidden; }
     display: none !important;
   }
 
-  /* Main deja espacio para sidebar fijo */
+  /* Deja espacio para sidebar fijo */
   .main{
     width: 100% !important;
-    padding-left: 92px !important; /* 78 + padding */
+    padding-left: 92px !important;
     padding-bottom: 0 !important;
+  }
+
+  .topbar{
+    height: auto;
+    padding: 12px;
+    flex-wrap: wrap;
+  }
+
+  .topbar-actions{
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .content{ padding: 12px !important; }
 }
 
-
-
-/* =========================================================
-   ✅ PATCH FINAL (NO QUITA NADA)
-   - Evita conflicto entre "bottom bar" y "left sidebar"
-   - Ajusta botón "Ir a la web" en topbar
-   - Hace el contenido más flexible (menos vacío)
-========================================================= */
-
-/* 1) En móviles/tablets: si ya usas sidebar a la izquierda (max-width:900),
-      anulamos la regla anterior de "bottom bar" para que NO se pisen. */
-@media (max-width: 900px) {
-  .sidebar{
-    top: 0 !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: auto !important;
-    height: 100vh !important;
-    border-top: none !important;
-  }
-}
-
-/* 2) Botón "Ir a la web" en topbar:
-      en pantallas muy chicas mostramos solo el ícono */
+/* botón "Ir a la web": solo ícono en pantallas muy chicas */
 @media (max-width: 520px) {
   .topbar .btn-web .btn-web-text {
     display: none !important;
   }
 }
 
-/* 3) Contenido flexible para StudentLayout:
-      evita que se "centre" y quede un hueco grande */
+/* Student layout helpers */
 .student-content{
   display: flex;
   justify-content: flex-start;
 }
-
 .student-content-inner{
   width: 100%;
   max-width: 1200px;
 }
-
-/* cuando el sidebar está colapsado en desktop, aprovecha más ancho */
 @media (hover: hover) and (pointer: fine){
   .sidebar:not(:hover) + .main .student-content-inner{
     max-width: 1400px;
   }
 }
 
+/* ✅ card / grid base */
+.card{
+  border:1px solid rgba(0,0,0,.08);
+  border-radius: var(--radius);
+  padding:18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.92) 0%, rgba(255,255,255,.86) 100%);
+  box-shadow: var(--shadow2);
+  color: var(--text);
+}
 
+.grid{
+  display:grid;
+  gap:12px;
+}
 
+/* ✅ botones pequeños / danger */
+.btn-sm{
+  padding: 8px 10px !important;
+  border-radius: 12px !important;
+  font-size: 13px !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-danger{
+  border-color: rgba(254,0,62,.25) !important;
+  background: rgba(254,0,62,.10) !important;
+}
+
+/* ✅ Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  *{
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}

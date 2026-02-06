@@ -27,18 +27,18 @@ async function get<T>(path: string, filters: ReportFilters) {
 }
 
 export const reportsApi = {
-  financeSummary: (f: ReportFilters) => get<{ cards: StatCard[] }>("/api/reports/finance/summary", f),
-  financeList: (f: ReportFilters) => get<{ rows: FinanceRow[] }>("/api/reports/finance/list", f),
+  financeSummary: (f: ReportFilters) => get<{ cards: StatCard[] }>("/reports/finance/summary", f),
+  financeList: (f: ReportFilters) => get<{ rows: FinanceRow[] }>("/reports/finance/list", f),
 
-  installmentsSummary: (f: ReportFilters) => get<{ cards: StatCard[] }>("/api/reports/installments/summary", f),
-  installmentsList: (f: ReportFilters) => get<{ rows: InstallmentRow[] }>("/api/reports/installments/list", f),
+  installmentsSummary: (f: ReportFilters) => get<{ cards: StatCard[] }>("/reports/installments/summary", f),
+  installmentsList: (f: ReportFilters) => get<{ rows: InstallmentRow[] }>("/reports/installments/list", f),
 
-  studentsSummary: (f: ReportFilters) => get<{ cards: StatCard[] }>("/api/reports/students/summary", f),
-  studentsList: (f: ReportFilters) => get<{ rows: StudentsRow[] }>("/api/reports/students/list", f),
+  studentsSummary: (f: ReportFilters) => get<{ cards: StatCard[] }>("/reports/students/summary", f),
+  studentsList: (f: ReportFilters) => get<{ rows: StudentsRow[] }>("/reports/students/list", f),
 
-  attendanceSummary: (f: ReportFilters) => get<{ cards: StatCard[] }>("/api/reports/attendance/summary", f),
-  attendanceList: (f: ReportFilters) => get<{ rows: AttendanceRow[] }>("/api/reports/attendance/list", f),
+  attendanceSummary: (f: ReportFilters) => get<{ cards: StatCard[] }>("/reports/attendance/summary", f),
+  attendanceList: (f: ReportFilters) => get<{ rows: AttendanceRow[] }>("/reports/attendance/list", f),
 
-  storeSummary: (f: ReportFilters) => get<{ cards: StatCard[] }>("/api/reports/store/summary", f),
-  storeList: (f: ReportFilters) => get<{ rows: StoreRow[] }>("/api/reports/store/list", f),
+  storeSummary: (f: ReportFilters) => get<{ cards: StatCard[] }>("/reports/store/summary", f),
+  storeList: (f: ReportFilters) => get<{ rows: StoreRow[] }>("/reports/store/list", f),
 };

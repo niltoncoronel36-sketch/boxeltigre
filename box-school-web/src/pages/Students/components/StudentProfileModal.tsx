@@ -236,113 +236,65 @@ function ReceiptModal(props: {
   }
 
   return (
-    <div
-      className="sp-overlay sp-overlay--receipt"
-      style={{
-        position: "fixed",
-        inset: 0,
-        display: "grid",
-        placeItems: "center",
-        padding: 18,
-        background: "rgba(2,6,23,.65)",
-        backdropFilter: "blur(8px)",
-        zIndex: 80,
-      }}
-      onMouseDown={onClose}
-    >
-      <div
-        className="sp-receipt"
-        style={{
-          width: "min(560px, 96vw)",
-          borderRadius: 18,
-          background: "rgba(255,255,255,.96)",
-          border: "1px solid rgba(0,0,0,.08)",
-          boxShadow: "0 20px 70px rgba(0,0,0,.30)",
-          padding: 14,
-        }}
-        onMouseDown={(e) => e.stopPropagation()}
-      >
+    <div className="sp-overlay sp-overlay--receipt" onMouseDown={onClose} role="dialog" aria-modal="true">
+      <div className="sp-receipt" onMouseDown={(e) => e.stopPropagation()}>
         <div className="sp-receipt__head">
-          <div className="sp-receipt__title">Nota de venta — Matrícula</div>
-          <button className="btn sp-iconBtn" type="button" onClick={onClose} aria-label="Cerrar">
-            <X size={16} />
+          <div>
+            <div className="sp-receipt__title">Nota de venta</div>
+            <div className="sp-receipt__sub">Matrícula • {receiptNo}</div>
+          </div>
+
+          <button className="sp-iconBtn" type="button" onClick={onClose} aria-label="Cerrar">
+            <X size={18} />
           </button>
         </div>
 
-        <div className="sp-receipt__body">
-          <div className="sp-biz">
-            <div className="sp-biz__name">{BUSINESS.name}</div>
-            <div className="sp-biz__line">{BUSINESS.address}</div>
-            <div className="sp-biz__line">{BUSINESS.city}</div>
-            <div className="sp-biz__line">
-              Tel: <b>{BUSINESS.phone}</b>
-              {BUSINESS.ruc ? (
-                <>
-                  {" "}
-                  • RUC: <b>{BUSINESS.ruc}</b>
-                </>
-              ) : null}
-            </div>
+        <div className="sp-receipt__biz">
+          <div className="sp-biz__name">{BUSINESS.name}</div>
+          <div className="sp-biz__line">{BUSINESS.address}</div>
+          <div className="sp-biz__line">{BUSINESS.city}</div>
+          <div className="sp-biz__line">
+            Tel: <b>{BUSINESS.phone}</b>
+            {BUSINESS.ruc ? (
+              <>
+                {" "}
+                • RUC: <b>{BUSINESS.ruc}</b>
+              </>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="sp-receipt__summary">
+          <div className="sp-box">
+            <div className="sp-k">Alumno</div>
+            <div className="sp-v">{studentFullName}</div>
+            <div className="sp-m">DNI: {studentDni}</div>
           </div>
 
-          <div className="sp-receipt__summary">
-            <div>
-              <div className="sp-k">N°</div>
-              <div className="sp-receipt__no">{receiptNo}</div>
-              <div className="sp-m">
-                Emitido: <b>{paidOn}</b>
-              </div>
-            </div>
-
-            <div className="sp-receipt__total">
-              <div className="sp-k">Total</div>
-              <div className="sp-receipt__amount">{moneyPENFromCents(amountCents)}</div>
-            </div>
+          <div className="sp-box">
+            <div className="sp-k">Detalle</div>
+            <div className="sp-v">Pago inicial (Matrícula)</div>
+            <div className="sp-m">Categoría: {categoryName}</div>
           </div>
 
-          <div className="sp-receipt__grid">
-            <div className="sp-box">
-              <div className="sp-k">Alumno</div>
-              <div className="sp-v">{studentFullName}</div>
-              <div className="sp-m">DNI: {studentDni}</div>
-            </div>
-
-            <div className="sp-box">
-              <div className="sp-k">Detalle</div>
-              <div className="sp-v">Pago inicial (Matrícula)</div>
-              <div className="sp-m">Categoría: {categoryName}</div>
-            </div>
-
-            <div className="sp-box">
-              <div className="sp-k">Método</div>
-              <div className="sp-v">{methodLabel(method)}</div>
-            </div>
-
-            <div className="sp-box">
-              <div className="sp-k">Fecha</div>
-              <div className="sp-v">{paidOn}</div>
-            </div>
+          <div className="sp-box">
+            <div className="sp-k">Método</div>
+            <div className="sp-v">{methodLabel(method)}</div>
+            <div className="sp-m">Fecha: {paidOn}</div>
           </div>
 
-          <div className="sp-note">
-            * Generado por el sistema. Conserva para control interno.
-          </div>
-
-          <div className="sp-terms">
-            <div className="sp-terms__title">Términos y condiciones</div>
-            <div className="sp-terms__list">
-              {BUSINESS.terms.map((t, i) => (
-                <div key={i}>• {t}</div>
-              ))}
-            </div>
+          <div className="sp-box sp-box--total">
+            <div className="sp-k">Total</div>
+            <div className="sp-total">{moneyPENFromCents(amountCents)}</div>
+            <div className="sp-m">PEN</div>
           </div>
         </div>
 
         <div className="sp-receipt__actions">
-          <button className="btn btn-primary sp-primary" type="button" onClick={handlePrint}>
-            <Printer size={16} /> Imprimir nota de venta
+          <button className="sp-btn sp-btn--primary" type="button" onClick={handlePrint}>
+            <Printer size={16} /> Imprimir
           </button>
-          <button className="btn" type="button" onClick={onClose}>
+          <button className="sp-btn sp-btn--ghost" type="button" onClick={onClose}>
             Cerrar
           </button>
         </div>
@@ -372,6 +324,28 @@ export function StudentProfileModal(props: {
   const [initialPaymentByEnrollment, setInitialPaymentByEnrollment] = useState<Record<number, InitialPayment>>({});
   const [receiptByEnrollment, setReceiptByEnrollment] = useState<Record<number, InitialReceipt | null>>({});
   const [receiptOpen, setReceiptOpen] = useState(false);
+
+  // ✅ transición: cuando open true, montamos con animación
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      const t = window.setTimeout(() => setMounted(true), 0);
+      return () => window.clearTimeout(t);
+    } else {
+      setMounted(false);
+    }
+  }, [open]);
+
+  // ✅ ESC para cerrar
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
 
   const refreshEnrollments = async () => {
     if (!student) return;
@@ -570,36 +544,16 @@ export function StudentProfileModal(props: {
       />
 
       <div
-        className="sp-overlay"
-        style={{
-          position: "fixed",
-          inset: 0,
-          display: "grid",
-          placeItems: "center",
-          padding: 18,
-          background: "rgba(2,6,23,.65)",
-          backdropFilter: "blur(8px)",
-          zIndex: 50,
-        }}
+        className={`sp-overlay ${mounted ? "is-open" : ""}`}
         onMouseDown={onClose}
+        role="dialog"
+        aria-modal="true"
       >
-        <div
-          className="sp-card"
-          style={{
-            width: "min(1180px, 96vw)",
-            maxHeight: "min(92vh, 980px)",
-            overflow: "auto",
-            borderRadius: 22,
-            background: "rgba(255,255,255,.92)",
-            border: "1px solid rgba(255,255,255,.18)",
-            boxShadow: "0 20px 80px rgba(0,0,0,.35)",
-          }}
-          onMouseDown={(e) => e.stopPropagation()}
-        >
-          {/* Banner */}
+        <div className="sp-card" onMouseDown={(e) => e.stopPropagation()}>
+          {/* Banner (sticky) */}
           <div className="sp-banner">
             <button className="sp-close" type="button" onClick={onClose} aria-label="Cerrar">
-              <X size={20} />
+              <X size={18} />
             </button>
 
             <div className="sp-banner__content">
@@ -611,7 +565,7 @@ export function StudentProfileModal(props: {
               <div className="sp-bannerInfo">
                 <div className="sp-nameRow">
                   <h2 className="sp-name">{formatName(student)}</h2>
-                  {isActive ? <ShieldCheck size={22} /> : null}
+                  {isActive ? <ShieldCheck size={20} className="sp-iconOk" /> : null}
                 </div>
 
                 <div className="sp-badges">
@@ -626,14 +580,14 @@ export function StudentProfileModal(props: {
             <div className="sp-stats">
               <div className="sp-stat">
                 <div className="sp-stat__k">
-                  <Zap size={12} /> ESTADO ACTUAL
+                  <Zap size={12} /> Estado
                 </div>
                 <div className="sp-stat__v">{isActive ? "Activo" : "Inactivo"}</div>
               </div>
 
               <div className="sp-stat">
                 <div className="sp-stat__k">
-                  <Award size={12} /> CATEGORÍA
+                  <Award size={12} /> Categoría
                 </div>
                 <div className="sp-stat__v">
                   {currentEnrollment?.category ? categoryLabel(currentEnrollment.category as any) : "Sin Matrícula"}
@@ -654,7 +608,7 @@ export function StudentProfileModal(props: {
             <div className="sp-panel">
               <div className="sp-panelHead">
                 <div className="sp-sectionTitle">Datos del estudiante</div>
-                <button className="btn sp-miniBtn" type="button" onClick={() => onEdit(student)}>
+                <button className="sp-btn sp-btn--ghost" type="button" onClick={() => onEdit(student)}>
                   <Edit3 size={14} /> Editar
                 </button>
               </div>
@@ -671,20 +625,24 @@ export function StudentProfileModal(props: {
                 <InfoTile icon={<Mail size={18} />} label="Email" value={(student as any).email || "—"} />
               </div>
 
-              <div className="sp-sectionTitle sp-sectionTitle--green">Contacto de emergencia</div>
-
+              <div className="sp-sectionTitle sp-sectionTitle--soft">Contacto de emergencia</div>
               <div className="sp-infoGrid">
                 <InfoTile icon={<HeartPulse size={18} />} label="Nombre" value={(student as any).emergency_contact_name || "No asignado"} />
                 <InfoTile icon={<Phone size={18} />} label="Teléfono" value={(student as any).emergency_contact_phone || "No asignado"} />
               </div>
 
               <div className="sp-actions">
-                <button className={`btn sp-action ${isActive ? "is-warn" : "is-ok"}`} type="button" onClick={handleToggleActive} disabled={loading}>
+                <button
+                  className={`sp-btn ${isActive ? "sp-btn--warn" : "sp-btn--ok"}`}
+                  type="button"
+                  onClick={handleToggleActive}
+                  disabled={loading}
+                >
                   {isActive ? <Ban size={14} /> : <CheckCircle2 size={14} />}
                   {isActive ? "Suspender" : "Activar"}
                 </button>
 
-                <button className="btn sp-action is-danger" type="button" onClick={handleDeleteStudent} disabled={loading}>
+                <button className="sp-btn sp-btn--danger" type="button" onClick={handleDeleteStudent} disabled={loading}>
                   <Trash2 size={14} /> Eliminar
                 </button>
               </div>
@@ -703,7 +661,7 @@ export function StudentProfileModal(props: {
                         {isPaid ? (
                           <button
                             type="button"
-                            className="btn sp-iconBtn"
+                            className="sp-iconBtn"
                             title="Ver nota de venta"
                             onClick={() => setReceiptOpen(true)}
                             disabled={!currentReceipt && paymentLoading}
@@ -719,7 +677,7 @@ export function StudentProfileModal(props: {
                     {!isPaid ? (
                       <div className="sp-payActions">
                         <select
-                          className="input sp-input"
+                          className="sp-input"
                           value={initialPayment?.method ?? "cash"}
                           onChange={(e) => setPaymentPatch({ method: e.target.value as PaymentMethod })}
                           disabled={paymentLoading}
@@ -732,16 +690,16 @@ export function StudentProfileModal(props: {
                         </select>
 
                         <input
-                          className="input sp-input"
+                          className="sp-input"
                           type="date"
                           value={initialPayment?.paid_on ?? todayYmd()}
                           onChange={(e) => setPaymentPatch({ paid_on: e.target.value })}
                           disabled={paymentLoading}
                         />
 
-                        <button className="btn btn-primary sp-primary" type="button" disabled={paymentLoading} onClick={commitInitialPayment}>
+                        <button className="sp-btn sp-btn--primary" type="button" disabled={paymentLoading} onClick={commitInitialPayment}>
                           <CheckCircle2 size={16} />
-                          {paymentLoading ? "Validando..." : "Validar pago"}
+                          {paymentLoading ? "Validando…" : "Validar pago"}
                         </button>
                       </div>
                     ) : (
@@ -749,23 +707,26 @@ export function StudentProfileModal(props: {
                         <div className="sp-paidOk">
                           <CheckCircle2 size={18} /> Matrícula pagada
                         </div>
-                        <div className="sp-paidNote">✅ Matrícula pagada y registrada. Puedes ver / imprimir la nota de venta.</div>
-                        <button type="button" className="btn sp-printBtn" onClick={() => setReceiptOpen(true)}>
+                        <div className="sp-paidNote">✅ Pagado y registrado. Puedes ver / imprimir la nota de venta.</div>
+                        <button type="button" className="sp-btn sp-btn--ghost" onClick={() => setReceiptOpen(true)}>
                           <Printer size={16} /> Imprimir nota de venta
                         </button>
                       </div>
                     )}
                   </div>
 
-                  <CreditPanel
-                    enrollment={currentEnrollment}
-                    monthlyFeeCents={currentFeeCents}
-                    enabled={isPaid}
-                    loading={loading}
-                    setLoading={setLoading}
-                    setErr={setErr}
-                    onRefresh={refreshEnrollments}
-                  />
+                  {/* ✅ coherencia: lo que esté dentro del modal también se ve “pro” */}
+                  <div className="sp-subCard">
+                    <CreditPanel
+                      enrollment={currentEnrollment}
+                      monthlyFeeCents={currentFeeCents}
+                      enabled={isPaid}
+                      loading={loading}
+                      setLoading={setLoading}
+                      setErr={setErr}
+                      onRefresh={refreshEnrollments}
+                    />
+                  </div>
 
                   <button
                     type="button"
@@ -789,7 +750,7 @@ export function StudentProfileModal(props: {
                 <div className="sp-empty">
                   <GraduationCap size={44} />
                   <div className="sp-emptyTitle">Sin matrícula activa</div>
-                  <button className="btn btn-primary sp-primary" type="button" onClick={() => setManageOpen(true)}>
+                  <button className="sp-btn sp-btn--primary" type="button" onClick={() => setManageOpen(true)}>
                     Matricular ahora
                   </button>
                 </div>

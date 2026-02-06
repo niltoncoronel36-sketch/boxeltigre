@@ -22,9 +22,8 @@ export type Student = {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-  
-  // Si tu backend Laravel ya envía estas relaciones en el show:
-  enrollments?: any[]; 
+
+  enrollments?: any[];
 };
 
 export type Paginator<T> = {
@@ -62,7 +61,7 @@ export type StudentPayload = Partial<
 >;
 
 export async function listStudents(params: ListStudentsParams): Promise<Paginator<Student>> {
-  const res = await api.get<Paginator<Student>>("/api/students", {
+  const res = await api.get<Paginator<Student>>("/students", {
     params: {
       search: params.search || "",
       active: params.active ?? "",
@@ -74,17 +73,17 @@ export async function listStudents(params: ListStudentsParams): Promise<Paginato
 }
 
 export async function createStudent(payload: StudentPayload): Promise<Student> {
-  const res = await api.post<{ data: Student }>("/api/students", payload);
+  const res = await api.post<{ data: Student }>("/students", payload);
   return res.data.data;
 }
 
 export async function updateStudent(id: number, payload: StudentPayload): Promise<Student> {
-  const res = await api.put<{ data: Student }>(`/api/students/${id}`, payload);
+  const res = await api.put<{ data: Student }>(`/students/${id}`, payload);
   return res.data.data;
 }
 
 export async function deleteStudent(id: number): Promise<void> {
-  await api.delete(`/api/students/${id}`);
+  await api.delete(`/students/${id}`);
 }
 
 /* ============================
@@ -100,9 +99,7 @@ export type CreateStudentUserResponse = {
 };
 
 export async function createStudentUser(studentId: number): Promise<CreateStudentUserResponse> {
-  const res = await api.post<{ data: CreateStudentUserResponse }>(
-    `/api/students/${studentId}/create-user`
-  );
+  const res = await api.post<{ data: CreateStudentUserResponse }>(`/students/${studentId}/create-user`);
   return res.data.data;
 }
 
@@ -111,11 +108,6 @@ export async function createStudentUser(studentId: number): Promise<CreateStuden
    ============================ */
 
 export async function getStudent(studentId: number): Promise<Student> {
-  const res = await api.get(`/api/students/${studentId}`);
-  
-  // Laravel suele envolver en 'data' si usas JsonResource
-  // Esta línea maneja ambos casos: con envoltura o directo
-  const s = (res.data?.data ?? res.data) as Student;
-  
-  return s;
+  const res = await api.get(`/students/${studentId}`);
+  return (res.data?.data ?? res.data) as Student;
 }

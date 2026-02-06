@@ -111,10 +111,24 @@ export default function PublicLayout() {
 
             {/* Desktop nav */}
             <nav className="pub-nav pub-nav--desktop" aria-label="Navegación principal">
-              <NavLink to="/" end className={navLinkClass}>Inicio</NavLink>
-              <NavLink to="/nosotros" className={navLinkClass}>Nosotros</NavLink>
-              <NavLink to="/tienda" className={navLinkClass}>Tienda</NavLink>
-              <NavLink to="/contacto" className={navLinkClass}>Contacto</NavLink>
+              <NavLink to="/" end className={navLinkClass}>
+                Inicio
+              </NavLink>
+              <NavLink to="/nosotros" className={navLinkClass}>
+                Nosotros
+              </NavLink>
+
+              {/* ✅ NUEVO: Servicios */}
+              <NavLink to="/servicios" className={navLinkClass}>
+                Servicios
+              </NavLink>
+
+              <NavLink to="/tienda" className={navLinkClass}>
+                Tienda
+              </NavLink>
+              <NavLink to="/contacto" className={navLinkClass}>
+                Contacto
+              </NavLink>
 
               <div className="pub-nav__sep" aria-hidden="true" />
 
@@ -193,12 +207,7 @@ export default function PublicLayout() {
                 </Link>
               )}
 
-              <button
-                className="pub-burger"
-                type="button"
-                aria-expanded={open}
-                onClick={() => setOpen((v) => !v)}
-              >
+              <button className="pub-burger" type="button" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
                 <span className={`pub-burger__lines ${open ? "is-open" : ""}`} />
               </button>
             </div>
@@ -213,6 +222,12 @@ export default function PublicLayout() {
               <NavLink to="/nosotros" className={navLinkClass} onClick={() => setOpen(false)}>
                 Nosotros
               </NavLink>
+
+              {/* ✅ NUEVO: Servicios */}
+              <NavLink to="/servicios" className={navLinkClass} onClick={() => setOpen(false)}>
+                Servicios
+              </NavLink>
+
               <NavLink to="/tienda" className={navLinkClass} onClick={() => setOpen(false)}>
                 Tienda
               </NavLink>
