@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { api } from "../../../services/api";
+import { api } from "../../services/api";
 import type { StoreProduct, StoreProductVariant } from "./store/types";
 import { addToCart, cartCount, loadCart, type CartItem } from "./store/cart";
 
@@ -40,14 +40,18 @@ export default function StoreProductDetail() {
       setErr(null);
 
       try {
-        const res = await api.get(`/api/products/${slug}`, { signal: controller.signal });
+        // ✅ baseURL ya incluye /api, NO pongas /api acá
+        const res = await api.get(`/products/${slug}`, { signal: controller.signal });
         const data = res?.data?.data ?? res?.data ?? null;
+
         if (alive) {
           const prod = data as StoreProduct;
           setP(prod);
 
           // Si tiene variantes, preselecciona la primera activa con stock
-          const vars = Array.isArray((prod as any)?.variants) ? ((prod as any).variants as StoreProductVariant[]) : [];
+          const vars = Array.isArray((prod as any)?.variants)
+            ? ((prod as any).variants as StoreProductVariant[])
+            : [];
           const first = vars.find((v) => v?.is_active && Number(v.stock) > 0) ?? null;
           setVariantId(first?.id ?? "");
         }
@@ -86,7 +90,6 @@ export default function StoreProductDetail() {
 
   const price = useMemo(() => {
     if (!p) return 0;
-    // Si hay variante y tiene override, úsalo
     const ov = selectedVariant?.price_override;
     if (hasVariants && ov != null) return Number(ov);
     return Number((p as any)?.price ?? 0);
@@ -97,7 +100,7 @@ export default function StoreProductDetail() {
   const canAdd = useMemo(() => {
     if (!p) return false;
     if (stock <= 0) return false;
-    if (hasVariants && !selectedVariant) return false; // debe elegir
+    if (hasVariants && !selectedVariant) return false;
     return true;
   }, [p, stock, hasVariants, selectedVariant]);
 
@@ -113,7 +116,7 @@ export default function StoreProductDetail() {
     setCart((prev) => {
       const next = addToCart(prev, {
         product_id: p.id,
-        variant_id: selectedVariant?.id ?? null, // ✅ CLAVE
+        variant_id: selectedVariant?.id ?? null,
 
         slug: p.slug,
         name: p.name,
@@ -121,7 +124,6 @@ export default function StoreProductDetail() {
         image: (p as any).image ?? null,
         qty: 1,
 
-        // solo para mostrar bonito (opcional)
         size: selectedVariant?.size ?? undefined,
         color: selectedVariant?.color ?? undefined,
         oz: selectedVariant?.oz != null ? String(selectedVariant.oz) : undefined,
@@ -210,7 +212,6 @@ export default function StoreProductDetail() {
                 <p className="pub-muted">Sin descripción por ahora.</p>
               )}
 
-              {/* ✅ Selector de variantes */}
               {hasVariants ? (
                 <div style={{ marginTop: 12 }}>
                   <div className="pub-muted" style={{ fontSize: 12, marginBottom: 6 }}>
